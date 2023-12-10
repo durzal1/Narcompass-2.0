@@ -2,16 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import { Text, View } from '../components/Themed';
-
+import MapViewDirections from 'react-native-maps-directions';
 export default function TabOneScreen() {
   const [markers, setMarkers] = useState([]);
 
   // Sample JSON data
   const sampleData = [
-    { id: 1, title: 'Marker 1', coordinate: { latitude: -34.603738, longitude: -58.38157 } },
-    { id: 2, title: 'Marker 2', coordinate: { latitude: -34.603, longitude: -58.382 } },
+    { id: 1, title: 'Marker 1', coordinate: { latitude: -34.603738, longitude: -58.38157 }, image:require('../assets/images/favicon.png')},
+    { id: 2, title: 'Marker 2', coordinate: { latitude: -34.603, longitude: -58.38 }, image:require('../assets/images/favicon.png') },
     // Add more data as needed
   ];
+
+  const origin = markers.length > 0 ? markers[0].coordinate : null;
+  const destination = markers.length > 1 ? markers[1].coordinate : null;
 
   useEffect(() => {
     setMarkers(sampleData);
@@ -40,8 +43,18 @@ export default function TabOneScreen() {
             key={marker.id}
             coordinate={marker.coordinate}
             title={marker.title}
+            image={marker.image}
           />
         ))}
+        {origin && destination && (
+          <MapViewDirections
+            origin={origin}
+            destination={destination}
+            apikey="AIzaSyAvZPOYG_JRxzhQC-TP_KE884wXOFEjpsY"
+            strokeWidth={3}
+            strokeColor="lightblue"
+          />
+        )}
       </MapView>
     </View>
   );
