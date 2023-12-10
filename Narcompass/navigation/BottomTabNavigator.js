@@ -7,7 +7,7 @@ import { useColorScheme } from "react-native";
 
 import Colors from "../constants/Colors";
 import TabOneScreen from "../screens/TabOneScreen";
-import TabTwoScreen from "../screens/TabTwoScreen";
+import TabTwoScreen from "../screens/history";
 
 const BottomTab = createBottomTabNavigator();
 
