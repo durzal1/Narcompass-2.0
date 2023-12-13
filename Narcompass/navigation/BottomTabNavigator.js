@@ -3,8 +3,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
-import { useColorScheme } from "react-native";
-
+import { TouchableOpacity, View, Text, useColorScheme } from 'react-native';
 import Colors from "../constants/Colors";
 import TabOneScreen from "../screens/TabOneScreen";
 import TabTwoScreen from "../screens/settings";
@@ -53,27 +52,42 @@ function TabBarIcon(props) {
 // https://reactnavigation.org/docs/tab-based-navigation#a-stack-navigator-for-each-tab
 const TabOneStack = createStackNavigator();
 
-function TabOneNavigator() {
+function SettingsIcon({ navigation }) {
+  return (
+    <TouchableOpacity
+      style={{ marginRight: 15 }}
+      onPress={() => navigation.navigate('TabTwo')} // Replace 'SettingsScreen' with the name of your settings screen
+    >
+      <Ionicons name="settings" size={24} color="black" />
+    </TouchableOpacity>
+  );
+}
+
+function TabOneNavigator({ navigation }) {
+  const TabOneStack = createStackNavigator();
+
   return (
     <TabOneStack.Navigator>
       <TabOneStack.Screen
         name="TabOneScreen"
         component={TabOneScreen}
-        options={{ headerTitle: "Tab One Title" }}
+        options={{
+          headerTitle: 'Home',
+          headerRight: () => <SettingsIcon navigation={navigation} />,
+        }}
       />
     </TabOneStack.Navigator>
   );
 }
-
 const TabTwoStack = createStackNavigator();
 
-function TabTwoNavigator() {
+function TabTwoNavigator({ navigation }) {
   return (
     <TabTwoStack.Navigator>
       <TabTwoStack.Screen
         name="TabTwoScreen"
         component={TabTwoScreen}
-        options={{ headerTitle: "Tab Two Title" }}
+        options={{ headerTitle: "Settings",headerRight: () => <SettingsIcon navigation={navigation}/> }}
       />
     </TabTwoStack.Navigator>
   );

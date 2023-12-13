@@ -86,3 +86,4 @@ const styles = StyleSheet.create({
         color: 'red', // Add this line
     }
 });
+
