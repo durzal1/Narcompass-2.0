@@ -9,6 +9,8 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 import NotFoundScreen from "../screens/NotFoundScreen";
 import BottomTabNavigator from "./BottomTabNavigator";
+import history from "../screens/history";
+import active from "../screens/Active";
 import LinkingConfiguration from "./LinkingConfiguration";
 
 export default function Navigation({ colorScheme }) {
@@ -35,6 +37,21 @@ function RootNavigator() {
         component={NotFoundScreen}
         options={{ title: "Oops!" }}
       />
+        <Stack.Screen name="ActiveDetails"
+                      component={active}
+                      options={{
+                        title: 'Active Screen',
+                        headerStyle: {
+                          backgroundColor: '#131c25',
+                        },
+                        headerTitleStyle: {
+                          color: '#FFFFFF',
+                        },
+                        headerTintColor: '#FFFFFF',
+                      }}
+        />
+        <Stack.Screen name="History" component={history} />
+
     </Stack.Navigator>
   );
 }

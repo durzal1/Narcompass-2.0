@@ -6,8 +6,10 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { useColorScheme } from "react-native";
 
 import Colors from "../constants/Colors";
-import TabOneScreen from "../screens/TabOneScreen";
-import TabTwoScreen from "../screens/settings";
+import Map from "../screens/map";
+import TabTwoScreen from "../screens/history";
+import TabThreeScreen from "../screens/Active";
+import notFound from "../screens/NotFoundScreen";
 
 const BottomTab = createBottomTabNavigator();
 
@@ -16,11 +18,11 @@ export default function BottomTabNavigator() {
 
   return (
     <BottomTab.Navigator
-      initialRouteName="TabOne"
+      initialRouteName="Map"
       screenOptions={{ tabBarActiveTintColor: Colors[colorScheme].tint }}
     >
       <BottomTab.Screen
-        name="TabOne"
+        name="Map"
         component={TabOneNavigator}
         options={{
           headerShown: false,
@@ -30,7 +32,7 @@ export default function BottomTabNavigator() {
         }}
       />
       <BottomTab.Screen
-        name="TabTwo"
+        name="History"
         component={TabTwoNavigator}
         options={{
           headerShown: false,
@@ -39,6 +41,16 @@ export default function BottomTabNavigator() {
           ),
         }}
       />
+        <BottomTab.Screen
+            name="Health"
+            component={notFound}
+            options={{
+                headerShown: false,
+                tabBarIcon: ({ color }) => (
+                    <TabBarIcon name="ios-code" color={color} />
+                ),
+            }}
+        />
     </BottomTab.Navigator>
   );
 }
@@ -58,7 +70,7 @@ function TabOneNavigator() {
     <TabOneStack.Navigator>
       <TabOneStack.Screen
         name="TabOneScreen"
-        component={TabOneScreen}
+        component={Map}
         options={{ headerTitle: "Tab One Title" }}
       />
     </TabOneStack.Navigator>

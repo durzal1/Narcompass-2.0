@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import { Text, View } from '../components/Themed';
 import MapViewDirections from 'react-native-maps-directions';
-export default function TabOneScreen() {
+export default function Map() {
   const [markers, setMarkers] = useState([]);
 
   // Sample JSON data
@@ -22,7 +22,7 @@ export default function TabOneScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
+      <Text style={styles.title}>Map</Text>
       <View
         style={styles.separator}
         lightColor="#eee"
