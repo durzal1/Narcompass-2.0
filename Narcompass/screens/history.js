@@ -1,13 +1,17 @@
 import { FlatList, Image, StyleSheet, Text, View } from "react-native";
 
 import EditScreenInfo from "../components/EditScreenInfo";
-// import narcan from "../assets/images/narcan2.jpg"
 import narcan from "../assets/images/narcan2PNG.png"
 import { MaterialIcons } from '@expo/vector-icons'; // Import MaterialIcons from your package
 import { useNavigation } from '@react-navigation/native';
 import { TouchableOpacity } from 'react-native';
+import { getDistance, sampleData } from "./map";
+import { useEffect, useState } from "react";
+import { appendOrRemoveHelpers, getLocation, getOverdose } from "./dbFunctions";
+import { client } from "../App";
 
-const data = [
+
+let data = [
     {
         ID: 1,
         time: 1634310000,
@@ -83,82 +87,128 @@ const data = [
 ];
 
 
-function mapHistoryData() {
+const formatPhoneNumber = (phoneNumber) => {
+    const cleaned = ('' + phoneNumber).replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+    if (match) {
+        return `${match[1]}-${match[2]}-${match[3]}`;
+    }
+    return phoneNumber;
+};
+
+
+
+
+export default function History() {
     const navigation = useNavigation();
+    const data2 = []
+    const [historyBoxes, setBox] = useState([]);
+
+    
 
     const handleInfoClick = (itemData) => {
         navigation.navigate('ActiveDetails', { itemData });
     };
-    return data.map((item, index) => {
-        return (
-            <View key={index} style={styles.historyBox}>
-                <View style={styles.innerBox}>
-                    <View style={styles.circle}>
-                        <Image source={narcan} style={styles.image} />
-                    </View>
 
-                    <View style={styles.content}>
-                        <Text style={styles.locationText}>
-                            {item.location}
-                        </Text>
-                        <Text style={styles.timeText}>
-                            {new Date(item.time).toLocaleTimeString()}
-                        </Text>
-                    </View>
-                    <View style={styles.infoCircle}>
-                        {/* Information symbol */}
-                        <TouchableOpacity onPress={() => handleInfoClick(item)}>
-                            <MaterialIcons name="info" size={40} color="#FFFFFF" />
-                        </TouchableOpacity>
+    useEffect(() => {
+        (async () => {
+            for (const u of sampleData) {
+                if (u.id === undefined) continue;
+                console.log('----------------');
+                console.log(u);
+                let temp = await getOverdose(client, { id: u.id });
+                console.log(temp);
+                if (temp === null) continue;
+                let { id, helper_ids, timestamp, active } = temp;
+                let { longitude, latitude } = await getLocation(client, { id: id });
+                data2.push({
+                    ID: id,
+                    time: timestamp,
+                    location: "Blue Bell",
+                    distance: getDistance(longitude, latitude),
+                    emergency_contact_info: formatPhoneNumber(id),
+                    assigned_unit: helper_ids.length + " units active",
+                    current_status: active ? 'Active' : 'Not active'
+                });
+            }
+            console.log(data2);
+           
+            setBox(mapHistoryData())
+        })();
+    }, []);
+    
+    function mapHistoryData() {
+
+        console.log(1);
+        
+
+        return data2.map((item, index) => {
+            return (
+                <View key={index} style={styles.historyBox}>
+                    <View style={styles.innerBox}>
+                        <View style={styles.circle}>
+                            <Image source={narcan} style={styles.image} />
+                        </View>
+
+                        <View style={styles.content}>
+                            <Text style={styles.locationText}>
+                                {item.location}
+                            </Text>
+                            <Text style={styles.timeText}>
+                                {new Date(item.time).toLocaleTimeString()}
+                            </Text>
+                        </View> 
+                        <View style={styles.infoCircle}>
+                            {/* Information symbol */}
+                            <TouchableOpacity onPress={() => handleInfoClick(item)}>
+                                <MaterialIcons name="info" size={40} color="#FFFFFF" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
-            </View>
-        );
-    });
-}
-
-export default function History() {
-    const historyBoxes = mapHistoryData();
+            );
+        });
+    }
 
 
     return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
                 <Text style={styles.title}>Recent Overdoses</Text>
-                <Text style={styles.count}>10</Text>
             </View>
             <View style={styles.separator} />
             <FlatList data={historyBoxes} renderItem={({ item }) => item} />
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#131c25',
         flex: 1,
-        // alignItems: "center",
-        // justifyContent: "center",
+        paddingTop: 30, // Add top padding for space
     },
     titleContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center', // Align title in the center
         alignItems: 'center',
-        paddingHorizontal: 20,
         marginVertical: 10,
     },
     title: {
+        fontSize: 26,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+        fontFamily: 'System',
+        textAlign: 'center', // Center the text within the container
+        flex: 1, // Allow the text to take up available space
+    },
+    count: {
         fontSize: 22,
         fontWeight: 'bold',
         color: '#FFFFFF',
         fontFamily: 'System',
+        marginLeft: 10,
     },
-    count: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-        fontFamily: 'System',
-    },
+
     text: {
         fontSize: 20,
         fontWeight: "bold",
@@ -168,27 +218,28 @@ const styles = StyleSheet.create({
 
     },
     locationText: {
-        fontSize: 16,
+        fontSize: 18, // Increase font size for location
         fontWeight: "bold",
         color: "#FFFFFF",
         fontFamily: 'System',
     },
     timeText: {
         fontSize: 14,
-        // color: "#FFFFFF",
-        color: "#8491a1",
+        color: "#8491a1", // Use a lighter color for timestamp
         fontFamily: 'System',
     },
     separator: {
-        marginVertical: 2,
-        height: 3,
-        backgroundColor: '#131c25',
+        marginVertical: 15, // Increase vertical space
+        height: 1, // Make the line thinner
+        backgroundColor: '#8491a1', // Adjust color for subtle contrast
     },
     historyBox: {
-        marginBottom: 15,
+        marginBottom: 2, // Increase space between history boxes
         width: "100%",
         backgroundColor: '#131c25',
-
+        paddingHorizontal: 15, // Add padding for better alignment
+        paddingVertical: 10, // Add vertical padding for spacing
+        borderRadius: 15, // Smoothen the corners
     },
     innerBox: {
         flexDirection: 'row',

@@ -13,6 +13,13 @@ import history from "../screens/history";
 import active from "../screens/Active";
 import LinkingConfiguration from "./LinkingConfiguration";
 
+import { Amplify } from "@aws-amplify/core";
+import amplifyConfig from '../src/amplifyconfiguration.json'
+
+
+
+Amplify.configure(amplifyConfig);
+
 export default function Navigation({ colorScheme }) {
   return (
     <NavigationContainer
@@ -55,3 +62,4 @@ function RootNavigator() {
     </Stack.Navigator>
   );
 }
+

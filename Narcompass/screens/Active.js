@@ -1,8 +1,10 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {FlatList, StyleSheet, View, Image, TouchableOpacity} from 'react-native';
 import { Text } from '../components/Themed';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { appendOrRemoveHelpers, getOverdose } from './dbFunctions';
+import { _ID, client } from '../App';
 
 const data2 = [
     {
@@ -38,8 +40,20 @@ const keyTextLabelMapping = {
 };
 export default function Active({ route }) {
     const navigation = useNavigation();
+    const [isAccepted, setIsAccepted] = useState(false);
+
     const data  = [route.params.itemData]; // Assuming you pass the data as 'items' through navigation
-    console.log(data)
+    const acceptCancelEmergency = () => {
+        if (isAccepted) {
+            removeHelp(data[0].ID);
+        }
+        else {
+            acceptHelp(data[0].ID);
+        }
+        // Logic for accepting the emergency
+        // You can implement the functionality you need here
+        setIsAccepted(!isAccepted);
+    };
     React.useLayoutEffect(() => {
         navigation.setOptions({
             headerLeft: () => (
@@ -50,9 +64,36 @@ export default function Active({ route }) {
         });
     }, [navigation]);
 
+    async function acceptHelp(id) {
+        console.log(await appendOrRemoveHelpers(client, {id, helper_id: _ID}));
+        console.log("ACCEPTED!")
+
+    }
+
+    async function removeHelp(id) {
+        let temp = await getOverdose(client, { id });
+        if (temp === null) return;
+        let { helper_ids } = temp;
+        let idx = -1;
+        for (let i = 0; i < helper_ids.length; i++) {
+            if (helper_ids[i] == _ID) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx == -1) return;
+        console.log(await appendOrRemoveHelpers(client, {id, remove_index: idx}));
+        console.log("REMOVED!")
+    }
+
     const renderItem = ({ item }) => (
 
         <View style={styles.container}>
+
+            <View style={styles.header}>
+                <Text style={styles.headerText}>Information</Text>
+            </View>
+
             <View style={styles.separator} />
 
             {Object.entries(item).map(([key, value]) => {
@@ -86,6 +127,15 @@ export default function Active({ route }) {
                     </View>
                 );
             })}
+
+            <TouchableOpacity
+                style={[styles.acceptButton, isAccepted ? styles.cancelButton : null]}
+                onPress={acceptCancelEmergency}
+            >
+                <Text style={styles.acceptButtonText}>
+                    {isAccepted ? 'Cancel' : 'Accept'}
+                </Text>
+            </TouchableOpacity>
         </View>
     );
     return (
@@ -105,7 +155,7 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     separator: {
-        marginVertical: 40,
+        marginVertical: 10,
         height: 3,
         backgroundColor: '#131c25',
     },
@@ -115,7 +165,7 @@ const styles = StyleSheet.create({
     },
     container2: {
         flex: 1,
-        paddingTop: 20,
+        paddingTop: 5,
         backgroundColor: '#131c25',
     },
     historyBox: {
@@ -167,5 +217,41 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         marginHorizontal: 12,
         opacity: 0.5,
+    },
+    acceptButton: {
+        backgroundColor: '#4CAF50', // Green color
+        paddingVertical: 15,
+        paddingHorizontal: 30,
+        borderRadius: 8,
+        alignSelf: 'center',
+        marginBottom: 20,
+    },
+    acceptButtonText: {
+        color: '#FFF',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    cancelButton: {
+        backgroundColor: '#E74C3C', // Green color
+        paddingVertical: 15,
+        paddingHorizontal: 30,
+        borderRadius: 8,
+        alignSelf: 'center',
+        marginBottom: 20,
+    },
+    header: {
+        paddingHorizontal: 20,
+        paddingBottom: 10,
+        marginTop: 40,
+        alignItems: 'center',
+        borderBottomWidth: 2,
+        borderBottomColor: '#2b3849',
+    },
+    headerText: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#e2e8f0',
+        letterSpacing: 1,
+        textTransform: 'uppercase',
     },
 });

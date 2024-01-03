@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Narcompass",
+    "name": "narcompass",
     "slug": "expo-template-tabs",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -30,10 +30,24 @@
         "googleMaps": {
           "apiKey": "AIzaSyAvZPOYG_JRxzhQC-TP_KE884wXOFEjpsY"
         }
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.FOREGROUND_SERVICE"
+      ],
+      "package": "com.anonymous.expotemplatetabs"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ]
+    ]
   }
 }
