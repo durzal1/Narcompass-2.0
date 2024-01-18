@@ -5,7 +5,7 @@ import narcan from "../assets/images/narcan2PNG.png"
 import { MaterialIcons } from '@expo/vector-icons'; // Import MaterialIcons from your package
 import { useNavigation } from '@react-navigation/native';
 import { TouchableOpacity } from 'react-native';
-import { getDistance, sampleData } from "./map";
+import { getDistance, locationData } from "./map";
 import { useEffect, useState } from "react";
 import { appendOrRemoveHelpers, getLocation, getOverdose } from "./dbFunctions";
 import { client } from "../App";
@@ -112,7 +112,7 @@ export default function History() {
 
     useEffect(() => {
         (async () => {
-            for (const u of sampleData) {
+            for (const u of locationData) {
                 if (u.id === undefined) continue;
                 console.log('----------------');
                 console.log(u);
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     innerBox: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#2a323d',
+        backgroundColor: '#2b3849',
         padding: 10,
         borderRadius: 25,
         overflow: 'hidden', // Ensure content stays within the rounded border
@@ -265,15 +265,14 @@ const styles = StyleSheet.create({
         borderRadius: 20,
     },
     content: {
-        backgroundColor: '#2a323d',
-
+        backgroundColor: '#2b3849',
         flex: 1,
     },
     infoCircle: {
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: '#2a323d',
+        backgroundColor: '#2b3849',
         marginRight: 15,
         justifyContent: 'center',
         alignItems: 'center',

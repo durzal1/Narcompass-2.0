@@ -8,10 +8,10 @@ import { useColorScheme, Image, StyleSheet, TouchableOpacity } from "react-nativ
 import Colors from "../constants/Colors";
 import Map from "../screens/map";
 import TabTwoScreen from "../screens/history";
-import notFound from "../screens/NotFoundScreen";
 import map from "../assets/images/map.png"
 import history from "../assets/images/activeOD.png"
 import health from "../assets/images/health.png"
+import HealthIndicators from "../screens/healthIndicators";
 import Settings from "../screens/settings";
 
 const BottomTab = createBottomTabNavigator();
@@ -54,7 +54,7 @@ export default function BottomTabNavigator() {
         }}
       />
       <BottomTab.Screen
-        name="Active Overdoses"
+        name="Active OD"
         component={TabTwoNavigator}
         options={{
           headerShown: false,
@@ -63,23 +63,23 @@ export default function BottomTabNavigator() {
           ),
         }}
       />
-      {/* <BottomTab.Screen
+      <BottomTab.Screen
         name="Health"
-        component={notFound}
+        component={HealthIndicators}
         options={{
           headerShown: false,
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="Health" color={color} />
           ),
         }}
-      /> */}
+      />
       <BottomTab.Screen
         name="Settings"
         component={Settings}
         options={{
           headerShown: false,
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="Health" color={color} />
+            <TabBarIcon name="Settings" color={color} />
           ),
         }}
       />

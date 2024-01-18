@@ -13,21 +13,20 @@ import DeviceInfo from "react-native-device-info";
 import { generateClient } from "@aws-amplify/api";
 
 export const client = generateClient();
-export let _ID = "5134303490"
+export let _ID = "5134303490" // test sample phone number
 
 export default function App() {
   const isLoadingComplete = useLoadedAssets();
   const colorScheme = useColorScheme();
 
   useEffect(() => {
-    // await requestPhoneNumberPermission();
 
     (async () => {
       let temp = await getUser(client, { id: _ID });
       console.log(temp);
       if (temp === null) {
 
-        await createUser(client, { name: "Main User", age: 17, phoneNumber: _ID });
+        await createUser(client, { name: "Main User", age: -1, phoneNumber: _ID });
       }
     })()
   }, [])
@@ -47,10 +46,8 @@ export default function App() {
         );
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
           _ID = await DeviceInfo.getPhoneNumber()
-
         } else {
           console.log('Phone number permission denied');
-          _ID = "5133403490"
         }
       }
     } catch (error) {

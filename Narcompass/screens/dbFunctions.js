@@ -5,7 +5,7 @@ import * as mutations from '../../Narcompass/src/graphql/mutations'
 /**
  * 
  * @param client 
- * @param data req: id (str), timestamp (int) | opt: helper_id (str), active (bool), remove_index (int)
+ * @param data req: id (str) | opt: helper_id (str), active (bool), remove_index (int), timestamp (int)
  */
 export async function appendOrRemoveHelpers(client, data) {
     
@@ -19,7 +19,7 @@ export async function appendOrRemoveHelpers(client, data) {
         const ret = res.data.updateOverdoses;
         return ret;
       } catch (err) {
-        console.log('error');
+        console.error(err);
         return null;
       }
 }
@@ -41,7 +41,7 @@ export async function updateLocation(client, data) {
         const ret = res.data.updateLocation;
         return ret;
       } catch (err) {
-        console.log('error');
+        console.error(err);
         return null;
       }
 }
@@ -63,7 +63,7 @@ export async function updateUser(client, data) {
         const ret = res.data.updateUser;
         return ret;
       } catch (err) {
-        console.log('error');
+        console.error(err);
         return null;
       }
 }
@@ -84,7 +84,7 @@ export async function getUser(client, data) {
     const ret = res.data.getUser;
     return ret;
   } catch (err) {
-    console.log('error');
+    console.error(err);
     return null;
   }
 }
@@ -107,7 +107,7 @@ export async function listUsers(client, data) {
     const ret = res.data.listUsers.items;
     return ret;
   } catch (err) {
-    console.log('error');
+    console.error(err);
     return null;
   }
 }
@@ -128,7 +128,7 @@ export async function getLocation(client, data) {
     const ret = res.data.getLocation;
     return ret;
   } catch (err) {
-    console.log('error');
+    console.error(err);
     return null;
   }
 }
@@ -151,7 +151,7 @@ export async function listLocations(client, data) {
     const ret = res.data.listLocations.items;
     return ret;
   } catch (err) {
-    console.log('error');
+    console.error(err);
     return null;
   }
 }
@@ -172,7 +172,7 @@ export async function getOverdose(client, data) {
     const ret = res.data.getOverdoses;
     return ret;
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return null;
   }
 }
@@ -195,7 +195,7 @@ export async function listOverdoses(client, data) {
     const ret = res.data.listOverdoses.items;
     return ret;
   } catch (err) {
-    console.log('error');
+    console.error(err);
     return null;
   }
 }
@@ -218,7 +218,7 @@ export async function createUser(client, data) {
     const ret = res.data.createUser;
     return ret;
   } catch (err) {
-    console.log('error');
+    console.error(err);
     return null;
   }
 }
@@ -241,7 +241,7 @@ export async function deleteUser(client, data) {
     const ret = res.data.deleteUser;
     return ret;
   } catch (err) {
-    console.log('error');
+    console.error(err);
     return null;
   }
 }
@@ -264,7 +264,7 @@ export async function createLocation(client, data) {
     const ret = res.data.createLocation;
     return ret;
   } catch (err) {
-    console.log('error');
+    console.error(err);
     return null;
   }
 }
@@ -287,7 +287,7 @@ export async function deleteLocation(client, data) {
     const ret = res.data.deleteLocation;
     return ret;
   } catch (err) {
-    console.log('error');
+    console.error(err);
     return null;
   }
 }
@@ -296,7 +296,7 @@ export async function deleteLocation(client, data) {
  * Creates a new overdose entry.
  * @param {object} client - The AWS AppSync client.
  * @param {object} data - Input data for creating an overdose entry.
- *                        { id: string, victim_id: string, timestamp: string, active: boolean }
+ *                        { id: string, victim_id: string, timestamp: int, active: boolean }
  * @returns {Promise<object|null>} - The created overdose data or null if an error occurs.
  */
 export async function createOverdose(client, data) {
@@ -310,7 +310,7 @@ export async function createOverdose(client, data) {
     const ret = res.data.createOverdoses;
     return ret;
   } catch (err) {
-    console.log('error');
+    console.error(err);
     return null;
   }
 }
@@ -333,10 +333,7 @@ export async function deleteOverdose(client, data) {
     const ret = res.data.deleteOverdoses;
     return ret;
   } catch (err) {
-    console.log('error');
+    console.error(err);
     return null;
   }
 }
-
-
-

@@ -6,20 +6,26 @@ import * as Location from 'expo-location';
 import MapViewDirections from 'react-native-maps-directions';
 import { Text, View } from '../components/Themed';
 import { onUpdateOverdoses } from '../src/graphql/subscriptions';
-import { createLocation, getLocation, getOverdose, getUser, listLocations, updateLocation } from '../screens/dbFunctions';
+import { createLocation, createOverdose, deleteOverdose, getLocation, getOverdose, getUser, listLocations, updateLocation } from '../screens/dbFunctions';
 import { client, _ID } from '../App';
 import Toast, { BaseToast } from 'react-native-toast-message';
 import narcan from "../assets/images/narcan2PNG.png"
 import { MaterialIcons } from "@expo/vector-icons";
 
 // Sample JSON data
-export const sampleData = [
-  { id: _ID, title: 'Current Location', coordinate: { latitude: 40.146600, longitude: -75.271310 },  url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" },
+export const locationData = [
+  { id: _ID, title: 'Current Location', coordinate: { latitude: 40.146600, longitude: -75.271310 }, url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" },
 ];
+export let _RADIUS = 2;
+
+export function setRadius(rad) {
+  _RADIUS = rad;
+}
 
 export function getDistance(longitude, latitude) {
-  return Math.sqrt((Math.pow((latitude - sampleData[0].coordinate.latitude), 2) + Math.pow((longitude - sampleData[0].coordinate.longitude), 2)) * 3958.8);
+  return Math.sqrt((Math.pow((latitude - locationData[0].coordinate.latitude), 2) + Math.pow((longitude - locationData[0].coordinate.longitude), 2)) * 3958.8);
 }
+
 
 export default function Map() {
 
@@ -29,7 +35,7 @@ export default function Map() {
       position: 'top',
       topOffset: 35,
       visibilityTime: 20000, // notification visibility time is 20 seconds
-      props: { address: t1+"\n1750 slayton drive, Blue Bell PA" }
+      props: { address: t1 }
     });
   }
 
@@ -38,15 +44,35 @@ export default function Map() {
   const [origin, setOrigin] = useState(null);
   const [destination, setDestination] = useState(null);
 
+  const [reportButtonColor, setReportButtonColor] = useState('green'); // Initial color
+  const [reportButtonText, setReportButtonText] = useState('Report');
+
+  async function handleReportButtonPress() {
+    // Toggle functionality
+    if (reportButtonText === 'Report') {
+      await createOverdose(client, { id: _ID, timestamp: new Date().getMilliseconds(), active: true });
+      showToast("Overdose help requested!");
+      // Handle logic for reporting
+      // For example, change color and text
+      setReportButtonColor('red');
+      setReportButtonText('Cancel');
+    } else {
+      await deleteOverdose(client, { id: _ID });
+      showToast("Help cancelled!");
+
+      setReportButtonColor('green');
+      setReportButtonText('Report');
+    }
+  };
+
   let first = true;
-  const _RADIUS = 1050
   let last_num = -1;
 
   async function refreshLocations() {
     try {
       const res = await listLocations(client, {});
       console.log(res);
-      sampleData.splice(1);
+      locationData.splice(1);
 
       res.forEach(async item => {
         const { id, latitude, longitude, timestamp } = item;
@@ -69,16 +95,16 @@ export default function Map() {
         const { name } = await getUser(client, { id: id });
         if (active) {
           console.log('herre!')
-          sampleData.push({ id, title: name, coordinate: { latitude, longitude } });
+          locationData.push({ id, title: name, coordinate: { latitude, longitude } });
           showToast(name + " needs help!", "", "" + latitude + ", " + longitude);
         }
 
         if (helper_ids.includes(_ID)) {
-          setOrigin(sampleData[0].coordinate);
+          setOrigin(locationData[0].coordinate);
           setDestination({ latitude, longitude });
         }
 
-        console.log(sampleData)
+        console.log(locationData)
 
       });
 
@@ -89,26 +115,26 @@ export default function Map() {
       console.log(err);
     }
 
-  
+
 
 
   }
 
-  
+
   useEffect(() => {
 
+
     refreshLocations();
-  
-    
+
 
     const createSub = client
       .graphql({ query: onUpdateOverdoses })
       .subscribe({
         next: async ({ _data }) => {
           await refreshLocations();
-          setMarkers(sampleData);
-          setOrigin(sampleData[0].coords);
-          setDestination(sampleData[2].coords);
+          setMarkers(locationData);
+          setOrigin(locationData[0].coords);
+          setDestination(locationData[2].coords);
 
 
         },
@@ -116,6 +142,22 @@ export default function Map() {
       });
 
     (async () => {
+      try {
+        const inputData = [98, 80, 15, 66, 1, 171, 59.7, 20.4];
+        await fetch('https://5h4fv0ryd5.execute-api.us-east-1.amazonaws.com/default/getHealthStatus?inputData=98,80,15,66,1,171,59.7,20.4')
+          .then(response => response.json())
+          .then(data => console.log(data))
+          .catch(error => console.error('Error calling API:', error));
+        // Make the API call
+
+        // Parse the JSON response
+        // const responseData = await response.body;
+
+        // Set the result in the state
+        // setResult(responseData);
+      } catch (error) {
+        console.error('Error calling API:', error);
+      }
 
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -139,7 +181,7 @@ export default function Map() {
           first = false;
         }
 
-        sampleData[0].coordinate = { latitude, longitude }
+        locationData[0].coordinate = { latitude, longitude }
         let temp = await getLocation(client, { id: _ID });
         let d = new Date()
 
@@ -149,7 +191,7 @@ export default function Map() {
         else {
           await updateLocation(client, { id: _ID, longitude, latitude, timestamp: d.getMilliseconds() });
         }
-        setMarkers(sampleData);
+        setMarkers(locationData);
       });
     })();
   }, []);
@@ -157,6 +199,12 @@ export default function Map() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Map</Text>
+      <TouchableOpacity
+        style={[styles.reportButton, { backgroundColor: reportButtonColor }]}
+        onPress={handleReportButtonPress}
+      >
+        <Text style={styles.reportButtonText}>{reportButtonText}</Text>
+      </TouchableOpacity>
       <View
         style={styles.separator}
         lightColor="#eee"
@@ -168,13 +216,13 @@ export default function Map() {
         region={region}
       >
         {markers.map(marker => (
-          
+
           <Marker
             key={marker.title}
             coordinate={marker.coordinate}
             title={marker.title}
             image={marker.image}
-            pinColor={marker.id==_ID?'blue':'red'}
+            pinColor={marker.id == _ID ? 'blue' : 'red'}
           />
         ))}
         {origin && destination && (
@@ -193,6 +241,25 @@ export default function Map() {
 }
 
 const styles = StyleSheet.create({
+  reportButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    width: 100, // Set the width to the desired size
+    height: 100, // Set the height to the same value as width for a circle
+    borderRadius: 50, // Half of the width/height to make a circle
+    overflow: 'hidden', // Ensure circular shape
+    backgroundColor: '#131c25', // Background color
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1, // Ensure the button is above other components
+  },
+
+  reportButtonText: {
+    color: '#FFFFFF', // Text color
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   container: {
     flex: 1,
     alignItems: 'center',
@@ -211,38 +278,38 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-    locationText: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#FFFFFF",
-        fontFamily: 'System',
-    },
-    circle: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#1C2D40',
-        marginRight: 15,
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden', // Ensure the image fits within the circle
-    },
-    image: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-    },
-    infoCircle: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#131c25',
-        marginLeft: 15,
-        marginRight: 15,
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden', // Ensure the icon fits within the circle
-    },
+  locationText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    fontFamily: 'System',
+  },
+  circle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#1C2D40',
+    marginRight: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden', // Ensure the image fits within the circle
+  },
+  image: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  infoCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#131c25',
+    marginLeft: 15,
+    marginRight: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden', // Ensure the icon fits within the circle
+  },
 });
 const toastConfig = {
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -10,16 +10,18 @@ import {
   Switch,
 } from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
+import { _RADIUS, setRadius } from './map';
+import { isNarcanCarrier, setNarcanCarrierState } from './Active';
+import { getUser } from './dbFunctions';
+import { _ID, client } from '../App';
 
 const SECTIONS = [
   {
     header: 'Preferences',
     items: [
       { id: 'language', icon: 'globe', label: 'Language', type: 'select' },
-      { id: 'darkMode', icon: 'moon', label: 'Dark Mode', type: 'dark' },
       { id: 'increased radius', icon: 'wifi', label: 'Use Expanded Radius', type: 'radius' },
       { id: 'carrier', icon: 'bell', label: 'Is Narcan Carrier', type: 'carrier' },
-       {id: 'car', icon: 'compass', label: 'Use Driving as Transportation', type: 'car' },
     ],
   },
   {
@@ -38,16 +40,31 @@ const SECTIONS = [
   },
 ];
 
+
 export default function Settings() {
   const [form, setForm] = useState({
     language: 'English',
     darkMode: true,
     wifi: false,
   });
-  const [narcanCarrier, setNarcanCarrier] = useState(false);
+  const [userName, setName] = useState('')
+  const [phoneNum, setNum] = useState('')
+  const [age, setAge] = useState(0)
+
+
+  useEffect(() => {
+    (async () => {
+        let { name, phoneNumber, age } = await getUser(client, { id: _ID });
+        setName(name);
+        setNum(phoneNumber);
+        setAge(age);
+
+    })()
+  })
+  const [narcanCarrier, setNarcanCarrier] = useState(isNarcanCarrier);
   const [darkMode, setDarkMode] = useState(false);
-    const [radiusMode, setRadiusMode] = useState(false);
-     const [carMode, setCarMode] = useState(false);
+  const [radiusMode, setRadiusMode] = useState(_RADIUS === 2 ? false : true);
+  const [carMode, setCarMode] = useState(false);
 
   return (
     <SafeAreaView style={{ backgroundColor: '#f6f6f6' }}>
@@ -69,9 +86,12 @@ export default function Settings() {
             style={styles.profileAvatar}
           />
 
-          <Text style={styles.profileName}>John Doe</Text>
+          <Text style={styles.profileName}>{userName}</Text>
 
-          <Text style={styles.profileEmail}>john.doe@mail.com</Text>
+          <Text style={styles.profileNum}>Phone Number: {phoneNum}</Text>
+
+          <Text style={styles.profileNum}>Age: {age}</Text>
+
 
           <TouchableOpacity
             onPress={() => {
@@ -127,24 +147,22 @@ export default function Settings() {
                         )}
                         {type === 'carrier' && (
                           <Switch value={narcanCarrier}
-                             onValueChange={(value) => setNarcanCarrier(value)}
+                            onValueChange={(value) => {
+                              setNarcanCarrierState(value);
+                              setNarcanCarrier(value)}
+                            }
                           />
                         )}
                         {type === 'radius' && (
-                                                  <Switch value={radiusMode}
-                                                     onValueChange={(value) => setRadiusMode(value)}
-                                                  />
-                                                )}
-                        {type === 'car' && (
-                                                                          <Switch value={carMode}
-                                                                             onValueChange={(value) => setCarMode(value)}
-                                                                          />
-                                                                        )}
-                         {type === 'dark' && (
-                                                  <Switch value={darkMode}
-                                                     onValueChange={(value) => setDarkMode(value)}
-                                                  />
-                                                )}
+                          <Switch value={radiusMode}
+                            onValueChange={(value) => {
+                              if (value) setRadius(10);
+                              else setRadius(2);
+                              setRadiusMode(value)}
+                            }
+                          />
+                        )}
+                      
 
                         {(type === 'select' || type === 'link') && (
                           <FeatherIcon
@@ -160,8 +178,10 @@ export default function Settings() {
               })}
             </View>
           </View>
+
         ))}
       </ScrollView>
+
     </SafeAreaView>
   );
 }
@@ -225,7 +245,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#090909',
   },
-  profileEmail: {
+  profileNum: {
     marginTop: 6,
     fontSize: 16,
     fontWeight: '400',

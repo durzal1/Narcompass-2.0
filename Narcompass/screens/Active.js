@@ -6,19 +6,11 @@ import { useNavigation } from '@react-navigation/native';
 import { appendOrRemoveHelpers, getOverdose } from './dbFunctions';
 import { _ID, client } from '../App';
 
-const data2 = [
-    {
-        location: 'New York',
-        time: '1:30 PM',
-        distance: '30 Miles',
-        emergency_contact_info: '215-581-5032',
-        assigned_unit: 'test',
-        current_status: 'Active',
-        ID: 1,
-    },
-    // Add more data objects if needed
-];
+let isNarcanCarrier = false;
 
+export function setNarcanCarrierState(state) {
+    isNarcanCarrier = state;
+}
 const keyImageMapping = {
     time: require('../assets/images/time5.png'),
     location: require('../assets/images/location2.png'),
@@ -127,8 +119,8 @@ export default function Active({ route }) {
                     </View>
                 );
             })}
-
-            <TouchableOpacity
+            {
+                isNarcanCarrier ? <TouchableOpacity
                 style={[styles.acceptButton, isAccepted ? styles.cancelButton : null]}
                 onPress={acceptCancelEmergency}
             >
@@ -136,6 +128,10 @@ export default function Active({ route }) {
                     {isAccepted ? 'Cancel' : 'Accept'}
                 </Text>
             </TouchableOpacity>
+            : null
+            }
+        
+            
         </View>
     );
     return (
