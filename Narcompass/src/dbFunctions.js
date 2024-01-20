@@ -3,9 +3,9 @@ import * as mutations from './graphql/mutations'
 
 
 /**
- * 
- * @param client 
- * @param data req: id (str) | opt: helper_id (str), active (bool), remove_index (int), timestamp (int)
+ * Retrieves user information by ID.
+ * @param {object} client - The AWS AppSync client.
+ * @param {object} data req: id (str) | opt: helper_id (str), active (bool), remove_index (int), timestamp (int)
  */
 export async function appendOrRemoveHelpers(client, data) {
     
@@ -25,9 +25,9 @@ export async function appendOrRemoveHelpers(client, data) {
 }
 
 /**
- * 
- * @param client 
- * @param data req: id (str) | opt: latitude (int), longitude (int), timestamp (int)
+ * Retrieves user information by ID.
+ * @param {object} client - The AWS AppSync client.
+ * @param {object} data req: id (str) | opt: latitude (int), longitude (int), timestamp (int)
  */
 export async function updateLocation(client, data) {
     
@@ -47,9 +47,9 @@ export async function updateLocation(client, data) {
 }
 
 /**
- * 
- * @param client 
- * @param data req: id (str) | opt: age (int), name (str), phoneNumber (str)
+ * Retrieves user information by ID.
+ * @param {object} client - The AWS AppSync client.
+ * @param {object} data req: id (str) | opt: age (int), name (str), phoneNumber (str)
  */
 export async function updateUser(client, data) {
     

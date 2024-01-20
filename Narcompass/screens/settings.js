@@ -1,21 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  Switch,
-} from 'react-native';
+import { StyleSheet, SafeAreaView, ScrollView, View, Text, Image, TouchableOpacity, Switch } from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import { _RADIUS, setRadius } from './map';
 import { isNarcanCarrier, setNarcanCarrierState } from './Active';
 import { getUser } from '../src/dbFunctions';
 import { _ID, client } from '../App';
 
-const SECTIONS = [
+// Define sections and their corresponding items
+const SETTINGS_SECTIONS = [
   {
     header: 'Preferences',
     items: [
@@ -23,142 +15,88 @@ const SECTIONS = [
       { id: 'carrier', icon: 'bell', label: 'Is Narcan Carrier', type: 'carrier' },
     ],
   },
-  
 ];
 
-
 export default function Settings() {
-  const [form, setForm] = useState({
-    language: 'English',
-    darkMode: true,
-    wifi: false,
-  });
-  const [userName, setName] = useState('')
-  const [phoneNum, setNum] = useState('')
-  const [age, setAge] = useState(0)
+  // State for user profile information
+  const [userName, setUserName] = useState('');
+  const [phoneNum, setPhoneNum] = useState('');
+  const [age, setAge] = useState(0);
 
-
-  useEffect(() => {
-    (async () => {
-        let { name, phoneNumber, age } = await getUser(client, { id: _ID });
-        setName(name);
-        setNum(phoneNumber);
-        setAge(age);
-
-    })()
-  })
+  // State for Narcan carrier, dark mode, and radius mode
   const [narcanCarrier, setNarcanCarrier] = useState(isNarcanCarrier);
   const [darkMode, setDarkMode] = useState(false);
   const [radiusMode, setRadiusMode] = useState(_RADIUS === 2 ? false : true);
-  const [carMode, setCarMode] = useState(false);
+
+  useEffect(() => {
+    // Fetch user information on component mount
+    (async () => {
+      let { name, phoneNumber, age } = await getUser(client, { id: _ID });
+      setUserName(name);
+      setPhoneNum(phoneNumber);
+      setAge(age);
+    })();
+  }, []);
 
   return (
-    <SafeAreaView style={{ backgroundColor: '#f6f6f6' }}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Settings</Text>
-
-          <Text style={styles.subtitle}>
-            Edit Your Profile Settings!
-          </Text>
-        </View>
-
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+        {/* Profile Information */}
         <View style={styles.profile}>
           <Image
-            alt=""
             source={{
               uri: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2.5&w=256&h=256&q=80',
             }}
             style={styles.profileAvatar}
           />
-
           <Text style={styles.profileName}>{userName}</Text>
-
           <Text style={styles.profileNum}>Phone Number: {phoneNum}</Text>
-
           <Text style={styles.profileNum}>Age: {age}</Text>
-
-
-          
         </View>
 
-        {SECTIONS.map(({ header, items }) => (
+        {/* Settings Sections */}
+        {SETTINGS_SECTIONS.map(({ header, items }) => (
           <View style={styles.section} key={header}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionHeaderText}>{header}</Text>
             </View>
             <View style={styles.sectionBody}>
-              {items.map(({ id, label, icon, type, value }, index) => {
-                return (
-                  <View
-                    key={id}
-                    style={[
-                      styles.rowWrapper,
-                      index === 0 && { borderTopWidth: 0 },
-                    ]}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        // handle onPress
-                      }}>
-                      <View style={styles.row}>
-                        <FeatherIcon
-                          color="#616161"
-                          name={icon}
-                          style={styles.rowIcon}
-                          size={22}
+              {/* Render each setting item */}
+              {items.map(({ id, label, icon, type }) => (
+                <View style={styles.rowWrapper} key={id}>
+                  <TouchableOpacity onPress={() => {}}>
+                    <View style={styles.row}>
+                      <FeatherIcon color="#616161" name={icon} style={styles.rowIcon} size={22} />
+                      <Text style={styles.rowLabel}>{label}</Text>
+                      <View style={styles.rowSpacer} />
+                      {type === 'carrier' && (
+                        <Switch
+                          value={narcanCarrier}
+                          onValueChange={(value) => {
+                            setNarcanCarrierState(value);
+                            setNarcanCarrier(value);
+                          }}
                         />
-
-                        <Text style={styles.rowLabel}>{label}</Text>
-
-                        <View style={styles.rowSpacer} />
-
-                        {type === 'select' && (
-                          <Text style={styles.rowValue}>{form[id]}</Text>
-                        )}
-
-                        {type === 'toggle' && (
-                          <Switch
-                            onChange={val => setForm({ ...form, [id]: val })}
-                            value={form[id]}
-                          />
-                        )}
-                        {type === 'carrier' && (
-                          <Switch value={narcanCarrier}
-                            onValueChange={(value) => {
-                              setNarcanCarrierState(value);
-                              setNarcanCarrier(value)}
-                            }
-                          />
-                        )}
-                        {type === 'radius' && (
-                          <Switch value={radiusMode}
-                            onValueChange={(value) => {
-                              if (value) setRadius(10);
-                              else setRadius(2);
-                              setRadiusMode(value)}
-                            }
-                          />
-                        )}
-                      
-
-                        {(type === 'select' || type === 'link') && (
-                          <FeatherIcon
-                            color="#ababab"
-                            name="chevron-right"
-                            size={22}
-                          />
-                        )}
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                );
-              })}
+                      )}
+                      {type === 'radius' && (
+                        <Switch
+                          value={radiusMode}
+                          onValueChange={(value) => {
+                            if (value) setRadius(10);
+                            else setRadius(2);
+                            setRadiusMode(value);
+                          }}
+                        />
+                      )}
+                      {/* Add other setting types as needed */}
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              ))}
             </View>
           </View>
-
         ))}
       </ScrollView>
-
     </SafeAreaView>
   );
 }

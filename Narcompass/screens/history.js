@@ -1,92 +1,13 @@
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
-
-import EditScreenInfo from "../components/EditScreenInfo";
-import narcan from "../assets/images/narcan2PNG.png"
-import { MaterialIcons } from '@expo/vector-icons'; // Import MaterialIcons from your package
+import React, { useEffect, useState } from "react";
+import { FlatList, Image, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import narcanImage from "../assets/images/narcan2PNG.png";
+import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { TouchableOpacity } from 'react-native';
-import { getDistance, locationData } from "./map";
-import { useEffect, useState } from "react";
-import { appendOrRemoveHelpers, getLocation, getOverdose } from "../src/dbFunctions";
+import { getDistance, locationData, reverseGeocode } from "./map";
+import { getLocation, getOverdose } from "../src/dbFunctions";
 import { client } from "../App";
 
-
-let data = [
-    {
-        ID: 1,
-        time: 1634310000,
-        location: 'New York',
-        distance: '30 Miles',
-        emergency_contact_info: '215-581-5032',
-        assigned_unit: 'test',
-        current_status: 'Active',
-    },
-    {
-        ID: 2,
-        time: 1634310000,
-        location: "San Francisco",
-        distance: '30 Miles',
-        emergency_contact_info: '215-581-5032',
-        assigned_unit: 'test',
-        current_status: 'Active',
-    },
-    {
-        ID: 3,
-        time: 1634320000,
-        location: "London",
-        distance: '30 Miles',
-        emergency_contact_info: '215-581-5032',
-        assigned_unit: 'test',
-        current_status: 'Active',
-    },
-    {
-        ID: 4,
-        time: 1634330000,
-        location: "Tokyo",
-        distance: '30 Miles',
-        emergency_contact_info: '215-581-5032',
-        assigned_unit: 'test',
-        current_status: 'Active',
-    },
-    {
-        ID: 1,
-        time: 1634300000,
-        location: "New York",
-        distance: '30 Miles',
-        emergency_contact_info: '215-581-5032',
-        assigned_unit: 'test',
-        current_status: 'Active',
-    },
-    {
-        ID: 2,
-        time: 1634310000,
-        location: "San Francisco",
-        distance: '30 Miles',
-        emergency_contact_info: '215-581-5032',
-        assigned_unit: 'test',
-        current_status: 'Active',
-    },
-    {
-        ID: 3,
-        time: 1634320000,
-        location: "London",
-        distance: '30 Miles',
-        emergency_contact_info: '215-581-5032',
-        assigned_unit: 'test',
-        current_status: 'Active',
-    },
-    {
-        ID: 4,
-        time: 1634330000,
-        location: "Tokyo",
-        distance: '30 Miles',
-        emergency_contact_info: '215-581-5032',
-        assigned_unit: 'test',
-        current_status: 'Active',
-    },
-];
-
-
+// Function to format phone numbers in a readable format
 const formatPhoneNumber = (phoneNumber) => {
     const cleaned = ('' + phoneNumber).replace(/\D/g, '');
     const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
@@ -96,15 +17,9 @@ const formatPhoneNumber = (phoneNumber) => {
     return phoneNumber;
 };
 
-
-
-
 export default function History() {
     const navigation = useNavigation();
-    const data2 = []
-    const [historyBoxes, setBox] = useState([]);
-
-    
+    const [historyBoxes, setHistoryBoxes] = useState([]);
 
     const handleInfoClick = (itemData) => {
         navigation.navigate('ActiveDetails', { itemData });
@@ -112,64 +27,64 @@ export default function History() {
 
     useEffect(() => {
         (async () => {
-            for (const u of locationData) {
-                if (u.id === undefined) continue;
-                console.log('----------------');
-                console.log(u);
-                let temp = await getOverdose(client, { id: u.id });
-                console.log(temp);
-                if (temp === null) continue;
-                let { id, helper_ids, timestamp, active } = temp;
+            const historyData = [];
+
+            for (const location of locationData) {
+                if (location.id === undefined) continue;
+
+                // Fetch overdose information
+                let overdoseData = await getOverdose(client, { id: location.id });
+
+                if (overdoseData === null) continue;
+
+                let { id, helper_ids, timestamp, active } = overdoseData;
+
+                // Get latitude and longitude
                 let { longitude, latitude } = await getLocation(client, { id: id });
-                data2.push({
+
+                // Format data for rendering
+                historyData.push({
                     ID: id,
                     time: timestamp,
-                    location: "Blue Bell",
+                    location: await reverseGeocode(latitude, longitude),
                     distance: getDistance(longitude, latitude),
                     emergency_contact_info: formatPhoneNumber(id),
-                    assigned_unit: helper_ids.length + " units active",
+                    assigned_unit: `${helper_ids.length} units active`,
                     current_status: active ? 'Active' : 'Not active'
                 });
             }
-            console.log(data2);
-           
-            setBox(mapHistoryData())
+
+            // Set the formatted data in the state
+            setHistoryBoxes(mapHistoryData(historyData));
         })();
     }, []);
-    
-    function mapHistoryData() {
 
-        console.log(1);
-        
-
-        return data2.map((item, index) => {
-            return (
-                <View key={index} style={styles.historyBox}>
-                    <View style={styles.innerBox}>
-                        <View style={styles.circle}>
-                            <Image source={narcan} style={styles.image} />
-                        </View>
-
-                        <View style={styles.content}>
-                            <Text style={styles.locationText}>
-                                {item.location}
-                            </Text>
-                            <Text style={styles.timeText}>
-                                {new Date(item.time).toLocaleTimeString()}
-                            </Text>
-                        </View> 
-                        <View style={styles.infoCircle}>
-                            {/* Information symbol */}
-                            <TouchableOpacity onPress={() => handleInfoClick(item)}>
-                                <MaterialIcons name="info" size={40} color="#FFFFFF" />
-                            </TouchableOpacity>
-                        </View>
+    // Map overdose history data to JSX elements
+    function mapHistoryData(data) {
+        return data.map((item, index) => (
+            <View key={index} style={styles.historyBox}>
+                <View style={styles.innerBox}>
+                    <View style={styles.circle}>
+                        <Image source={narcanImage} style={styles.image} />
+                    </View>
+                    <View style={styles.content}>
+                        <Text style={styles.locationText}>
+                            {item.location}
+                        </Text>
+                        <Text style={styles.timeText}>
+                            {new Date(item.time).toLocaleTimeString()}
+                        </Text>
+                    </View>
+                    <View style={styles.infoCircle}>
+                        {/* Information symbol */}
+                        <TouchableOpacity onPress={() => handleInfoClick(item)}>
+                            <MaterialIcons name="info" size={40} color="#FFFFFF" />
+                        </TouchableOpacity>
                     </View>
                 </View>
-            );
-        });
+            </View>
+        ));
     }
-
 
     return (
         <View style={styles.container}>
@@ -181,6 +96,7 @@ export default function History() {
         </View>
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#131c25',

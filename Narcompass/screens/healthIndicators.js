@@ -1,73 +1,70 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, SafeAreaView, View, Text, TextInput, Image } from 'react-native';
 
-import heart from "../assets/images/heart.png"
+import heartImage from "../assets/images/heart.png";
 
-const SECTIONS = [
-    {
-        header: 'Health Indicators',
-        items: [
-            { id: 'O2', label: 'O2 Level (%)', type: 'indicator' },
-            { id: 'heart_rate', label: 'Beats Per Min', type: 'indicator' },
-            { id: 'bpm', label: 'Breaths Per Min', type: 'indicator' },
-            { id: 'age', label: 'Age', type: 'info' },
-            { id: 'sex', label: 'Sex', type: 'info' },
-            { id: 'height', label: 'Height (cm)', type: 'info' },
-            { id: 'weight', label: 'Weight (kg)', type: 'info' },
-            { id: 'bmi', label: 'BMI', type: 'info' },
-        ],
-    },
+const HEALTH_INDICATORS = [
+    { id: 'O2', label: 'O2 Level (%)', type: 'indicator' },
+    { id: 'heart_rate', label: 'Beats Per Min', type: 'indicator' },
+    { id: 'bpm', label: 'Breaths Per Min', type: 'indicator' },
+    { id: 'age', label: 'Age', type: 'info' },
+    { id: 'sex', label: 'Sex', type: 'info' },
+    { id: 'height', label: 'Height (cm)', type: 'info' },
+    { id: 'weight', label: 'Weight (kg)', type: 'info' },
+    { id: 'bmi', label: 'BMI', type: 'info' },
 ];
 
 export default function HealthIndicators() {
-    const initalHealthData = [98, 80, 15, 66, 1, 171, 59.7, 20.4];
+    const initialHealthData = [98, 80, 15, 66, 1, 171, 59.7, 20.4];
 
     const [healthInfo, setHealthInfo] = useState({
-        O2: initalHealthData[0],
-        heart_rate: initalHealthData[1],
-        bpm: initalHealthData[2],
-        age: initalHealthData[3],
-        sex: initalHealthData[4] === 1 ? 'Male' : 'Female',
-        height: initalHealthData[5],
-        weight: initalHealthData[6],
-        bmi: initalHealthData[7],
+        O2: initialHealthData[0],
+        heart_rate: initialHealthData[1],
+        bpm: initialHealthData[2],
+        age: initialHealthData[3],
+        sex: initialHealthData[4] === 1 ? 'Male' : 'Female',
+        height: initialHealthData[5],
+        weight: initialHealthData[6],
+        bmi: initialHealthData[7],
     });
 
     const [healthStatus, setHealthStatus] = useState('Healthy');
 
-
+    // Update health information based on user input
     const updateHealthInfo = async (id, newValue) => {
-        console.error(id + " " + newValue)
-        let tempInfo = JSON.parse(JSON.stringify(healthInfo))
-        tempInfo[id] = id === "sex" ? newValue : parseInt(newValue)
+        console.error(id + " " + newValue);
+
+        // Clone healthInfo to avoid mutating the state directly
+        let tempInfo = { ...healthInfo };
+        tempInfo[id] = id === "sex" ? newValue : parseInt(newValue, 10);
+
         // Check if the value is NaN and set it to an empty string
         if (isNaN(tempInfo[id])) {
             tempInfo[id] = '';
         }
+
         setHealthInfo(tempInfo);
-        console.log("HERE")
 
-        let healthArr = Object.values(tempInfo)
+        // Prepare array for API call
+        let healthArr = Object.values(tempInfo);
         healthArr[4] = (healthArr[4] === 'Male') ? 1 : -1;
-        console.log("HERE")
 
-        console.error(healthArr)
-        await fetch(`https://5h4fv0ryd5.execute-api.us-east-1.amazonaws.com/default/getHealthStatus?inputData=${healthArr.join(',')}`)
-            .then(response => response.json())
-            .then(data => {
-                console.error(data)
-                setHealthStatus(data.result === "1" ? "Healthy" : "Not Healthy")
-            }
-            )
-            .catch(error => console.error('Error calling API:', error));
+        console.error(healthArr);
 
+        try {
+            // Call the API to get health status
+            const response = await fetch(`https://5h4fv0ryd5.execute-api.us-east-1.amazonaws.com/default/getHealthStatus?inputData=${healthArr.join(',')}`);
+            const data = await response.json();
 
+            console.error(data);
 
-
-
-        console.log("healthStatus")
-        console.log(healthInfo)
+            // Update health status based on API response
+            setHealthStatus(data.result === "1" ? "Healthy" : "Not Healthy");
+        } catch (error) {
+            console.error('Error calling API:', error);
+        }
     };
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.headerContainer}>
@@ -76,30 +73,27 @@ export default function HealthIndicators() {
             </View>
 
             <View style={styles.heartSection}>
-                <Image source={heart} style={styles.centeredHeartImage} />
+                <Image source={heartImage} style={styles.centeredHeartImage} />
             </View>
 
             <View style={styles.infoGrid}>
-                {SECTIONS.map((section) => (
-                    <React.Fragment key={section.header}>
-                        {section.items.map((item) => (
-                            <View style={styles.infoItem} key={item.id}>
-                                <Text style={styles.infoLabel}>{item.label}</Text>
+                {/* Render health indicators */}
+                {HEALTH_INDICATORS.map((indicator) => (
+                    <View style={styles.infoItem} key={indicator.id}>
+                        <Text style={styles.infoLabel}>{indicator.label}</Text>
 
-                                <TextInput
-                                    style={styles.infoValue}
-                                    value={String(healthInfo[item.id])}
-                                    onChangeText={(text) => updateHealthInfo(item.id, text)}
-                                    keyboardType={item.id === 'sex' ? 'default' : 'numeric'}
-
-                                />
-
-                            </View>
-                        ))}
-                    </React.Fragment>
+                        {/* Input field for user to update health information */}
+                        <TextInput
+                            style={styles.infoValue}
+                            value={String(healthInfo[indicator.id])}
+                            onChangeText={(text) => updateHealthInfo(indicator.id, text)}
+                            keyboardType={indicator.id === 'sex' ? 'default' : 'numeric'}
+                        />
+                    </View>
                 ))}
             </View>
 
+            {/* Display health status */}
             <Text style={styles.healthStatus}>
                 Health Status: {' '}
                 <Text style={healthStatus === 'Healthy' ? styles.healthyText : styles.unhealthyText}>
@@ -109,6 +103,7 @@ export default function HealthIndicators() {
         </SafeAreaView>
     );
 }
+
 const styles = StyleSheet.create({
 
     infoItem: {

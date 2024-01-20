@@ -8,13 +8,16 @@ import { Text, View } from '../components/Themed';
 import { onUpdateOverdoses } from '../src/graphql/subscriptions';
 import { createLocation, createOverdose, deleteOverdose, getLocation, getOverdose, getUser, listLocations, updateLocation } from '../src/dbFunctions';
 import { client, _ID } from '../App';
-import Toast, { BaseToast } from 'react-native-toast-message';
-import narcan from "../assets/images/narcan2PNG.png"
+import Toast from 'react-native-toast-message';
+import narcanImage from "../assets/images/narcan2PNG.png";
 import { MaterialIcons } from "@expo/vector-icons";
 import Geocoding from 'react-native-geocoding';
 
-Geocoding.init("AIzaSyAvZPOYG_JRxzhQC-TP_KE884wXOFEjpsY"); // api key public for testing purposes and to share functionality with scholarship
-const reverseGeocode = async (latitude, longitude) => {
+// Initialize Geocoding with API key (public for testing purposes and scholarship)
+Geocoding.init("AIzaSyAvZPOYG_JRxzhQC-TP_KE884wXOFEjpsY");
+
+// Reverse geocode function to get address from latitude and longitude
+export const reverseGeocode = async (latitude, longitude) => {
   try {
     const response = await Geocoding.from(latitude, longitude);
     const address = response.results[0].formatted_address;
@@ -23,30 +26,32 @@ const reverseGeocode = async (latitude, longitude) => {
     console.error("Error in reverse geocoding:", error);
   }
 };
-// Sample JSON data
+
+// Sample JSON data for location
 export const locationData = [
-  { id: _ID, title: 'Current Location', coordinate: { latitude: 40.146600, longitude: -75.271310 }, url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" },
+  { id: _ID, title: 'Current Location', coordinate: { latitude: 40.146600, longitude: -75.271310 }, image: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" },
 ];
+
 export let _RADIUS = 2;
 
-export function setRadius(rad) {
-  _RADIUS = rad;
+// Set the radius for location filtering
+export function setRadius(radius) {
+  _RADIUS = radius;
 }
 
+// Calculate distance between two coordinates
 export function getDistance(longitude, latitude) {
   return Math.sqrt((Math.pow((latitude - locationData[0].coordinate.latitude), 2) + Math.pow((longitude - locationData[0].coordinate.longitude), 2)) * 3958.8);
 }
 
-
 export default function Map() {
-
-  const showToast = (msg) => {
+  const showToast = (message) => {
     Toast.show({
       type: 'customToast',
       position: 'top',
       topOffset: 35,
-      visibilityTime: 20000, // notification visibility time is 20 seconds
-      props: { message: msg }
+      visibilityTime: 20000,
+      props: { message },
     });
   }
 
@@ -55,60 +60,57 @@ export default function Map() {
   const [origin, setOrigin] = useState(null);
   const [destination, setDestination] = useState(null);
 
-  const [reportButtonColor, setReportButtonColor] = useState('green'); // Initial color
+  const [reportButtonColor, setReportButtonColor] = useState('green');
   const [reportButtonText, setReportButtonText] = useState('Report');
 
+  // Handle button press for reporting overdose or canceling help
   async function handleReportButtonPress() {
-    // Toggle functionality
     if (reportButtonText === 'Report') {
       await createOverdose(client, { id: _ID, timestamp: new Date().getMilliseconds(), active: true });
       showToast("Overdose help requested!");
-      // Handle logic for reporting
-      // For example, change color and text
       setReportButtonColor('red');
       setReportButtonText('Cancel');
     } else {
       await deleteOverdose(client, { id: _ID });
       showToast("Help cancelled!");
-
       setReportButtonColor('green');
       setReportButtonText('Report');
     }
   };
 
+  // Variables for tracking state changes
   let first = true;
-  let last_num = -1;
+  let lastNumHelpers = -1;
 
+  // Refresh location markers on the map
   async function refreshLocations() {
     try {
-      const res = await listLocations(client, {});
-      console.log(res);
+      const locations = await listLocations(client, {});
       locationData.splice(1);
 
-      res.forEach(async item => {
-        const { id, latitude, longitude, timestamp } = item;
+      locations.forEach(async item => {
+        const { id, latitude, longitude } = item;
         if (id === _ID) {
-          let temp = await getOverdose(client, { id: id });
-          if (temp === null) return;
-          const { active, helper_ids } = temp;
+          let overdoseData = await getOverdose(client, { id });
+          if (overdoseData === null) return;
+          const { active, helper_ids } = overdoseData;
           if (!active) return;
-          if (last_num == helper_ids.length) return;
-          last_num = helper_ids.length;
-          console.log("LENGTH OF HELPERS: " + helper_ids.length);
-          let text1 = "" + helper_ids.length + " helping!";
-          showToast(text1);
+          if (lastNumHelpers == helper_ids.length) return;
+          lastNumHelpers = helper_ids.length;
+          let message = `${helper_ids.length} helping!`;
+          showToast(message);
           return;
         }
         if (getDistance(longitude, latitude) > _RADIUS) return;
-        let temp = await getOverdose(client, { id: id });
-        if (temp === null) return;
-        const { active, helper_ids } = temp;
-        const { name } = await getUser(client, { id: id });
+
+        let overdoseData = await getOverdose(client, { id });
+        if (overdoseData === null) return;
+        const { active, helper_ids } = overdoseData;
+        const { name } = await getUser(client, { id });
+
         if (active) {
-          console.log('herre!')
-          locationData.push({ id, title: name, coordinate: { latitude, longitude } });
+          locationData.push({ id, title: name, coordinate: { latitude, longitude }, image: narcanImage });
           let address = await reverseGeocode(latitude, longitude);
-          console.error(address)
           showToast(address);
         }
 
@@ -116,30 +118,18 @@ export default function Map() {
           setOrigin(locationData[0].coordinate);
           setDestination({ latitude, longitude });
         }
- 
-        console.log(locationData)
-
       });
 
-
-
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.error(error);
     }
-
-
-
-
   }
 
-
   useEffect(() => {
-
-
     refreshLocations();
 
-
-    const createSub = client
+    // Subscribe to updates on overdoses
+    const subscription = client
       .graphql({ query: onUpdateOverdoses })
       .subscribe({
         next: async ({ _data }) => {
@@ -147,27 +137,22 @@ export default function Map() {
           setMarkers(locationData);
           setOrigin(locationData[0].coords);
           setDestination(locationData[2].coords);
-
-
         },
-        error: (error) => console.warn(error)
+        error: (error) => console.error(error),
       });
 
+    // Request location permission and watch user's location
     (async () => {
-      
-
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         setErrorMsg('Permission to access location was denied');
         return;
       }
 
-      let locF = await Location.watchPositionAsync({ accuracy: Location.Accuracy.Highest }, async (location) => {
-
+      let locationSubscription = await Location.watchPositionAsync({ accuracy: Location.Accuracy.Highest }, async (location) => {
         let latitude = location.coords.latitude;
         let longitude = location.coords.longitude;
 
-        console.log(location.coords)
         if (first) {
           setRegion({
             latitude,
@@ -178,19 +163,25 @@ export default function Map() {
           first = false;
         }
 
-        locationData[0].coordinate = { latitude, longitude }
-        let temp = await getLocation(client, { id: _ID });
-        let d = new Date()
+        locationData[0].coordinate = { latitude, longitude };
+        let existingLocation = await getLocation(client, { id: _ID });
+        let timestamp = new Date().getMilliseconds();
 
-        if (temp === null) {
-          await createLocation(client, { id: _ID, longitude, latitude, timestamp: d.getMilliseconds() });
-        }
-        else {
-          await updateLocation(client, { id: _ID, longitude, latitude, timestamp: d.getMilliseconds() });
+        if (existingLocation === null) {
+          await createLocation(client, { id: _ID, longitude, latitude, timestamp });
+        } else {
+          await updateLocation(client, { id: _ID, longitude, latitude, timestamp });
         }
         setMarkers(locationData);
       });
     })();
+
+    // Cleanup subscriptions on component unmount
+    return () => {
+      subscription.unsubscribe();
+      locationSubscription.remove();
+    };
+
   }, []);
 
   return (
@@ -213,7 +204,6 @@ export default function Map() {
         region={region}
       >
         {markers.map(marker => (
-
           <Marker
             key={marker.title}
             coordinate={marker.coordinate}
@@ -236,7 +226,6 @@ export default function Map() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   reportButton: {
     position: 'absolute',
@@ -347,7 +336,7 @@ const toastConfig = {
         {props.message}
       </Text>
 
-      <TouchableOpacity style={styles.infoCircle} onPress={() => handleInfoClick(item)}>
+      <TouchableOpacity style={styles.infoCircle}>
         {/* Information symbol */}
         <MaterialIcons name="info" size={40} color="#FFFFFF" />
       </TouchableOpacity>
