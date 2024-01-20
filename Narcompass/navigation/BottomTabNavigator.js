@@ -54,7 +54,7 @@ export default function BottomTabNavigator() {
         }}
       />
       <BottomTab.Screen
-        name="Active OD"
+        name="Active"
         component={TabTwoNavigator}
         options={{
           headerShown: false,

@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import { TouchableOpacity } from 'react-native';
 import { getDistance, locationData } from "./map";
 import { useEffect, useState } from "react";
-import { appendOrRemoveHelpers, getLocation, getOverdose } from "./dbFunctions";
+import { appendOrRemoveHelpers, getLocation, getOverdose } from "../src/dbFunctions";
 import { client } from "../App";
 
 

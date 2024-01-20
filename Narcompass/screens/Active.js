@@ -3,10 +3,10 @@ import {FlatList, StyleSheet, View, Image, TouchableOpacity} from 'react-native'
 import { Text } from '../components/Themed';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { appendOrRemoveHelpers, getOverdose } from './dbFunctions';
+import { appendOrRemoveHelpers, getOverdose } from '../src/dbFunctions';
 import { _ID, client } from '../App';
 
-let isNarcanCarrier = false;
+export let isNarcanCarrier = false;
 
 export function setNarcanCarrierState(state) {
     isNarcanCarrier = state;

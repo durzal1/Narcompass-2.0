@@ -12,32 +12,18 @@ import {
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import { _RADIUS, setRadius } from './map';
 import { isNarcanCarrier, setNarcanCarrierState } from './Active';
-import { getUser } from './dbFunctions';
+import { getUser } from '../src/dbFunctions';
 import { _ID, client } from '../App';
 
 const SECTIONS = [
   {
     header: 'Preferences',
     items: [
-      { id: 'language', icon: 'globe', label: 'Language', type: 'select' },
       { id: 'increased radius', icon: 'wifi', label: 'Use Expanded Radius', type: 'radius' },
       { id: 'carrier', icon: 'bell', label: 'Is Narcan Carrier', type: 'carrier' },
     ],
   },
-  {
-    header: 'Help',
-    items: [
-      { id: 'bug', icon: 'flag', label: 'Report Bug', type: 'link' },
-      { id: 'contact', icon: 'mail', label: 'Contact Us', type: 'link' },
-    ],
-  },
-  {
-    header: 'History',
-    items: [
-      { id: 'saved', icon: 'save', label: 'Saved', type: 'link' },
-      { id: 'downloaded', icon: 'download', label: 'Downloads', type: 'link' },
-    ],
-  },
+  
 ];
 
 
@@ -93,16 +79,7 @@ export default function Settings() {
           <Text style={styles.profileNum}>Age: {age}</Text>
 
 
-          <TouchableOpacity
-            onPress={() => {
-              // handle onPress
-            }}>
-            <View style={styles.profileAction}>
-              <Text style={styles.profileActionText}>Edit Profile</Text>
-
-              <FeatherIcon color="#fff" name="edit" size={16} />
-            </View>
-          </TouchableOpacity>
+          
         </View>
 
         {SECTIONS.map(({ header, items }) => (

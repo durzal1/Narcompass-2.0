@@ -8,7 +8,7 @@ import Navigation from "./navigation";
 import { useColorScheme } from "react-native";
 import { AppRegistry } from "react-native";
 import { useEffect } from "react";
-import { createUser, getUser } from "./screens/dbFunctions";
+import { createUser, getUser } from "./src/dbFunctions";
 import DeviceInfo from "react-native-device-info";
 import { generateClient } from "@aws-amplify/api";
 
@@ -20,13 +20,13 @@ export default function App() {
   const colorScheme = useColorScheme();
 
   useEffect(() => {
-
     (async () => {
+      await requestPhoneNumberPermission(); // will use authentication method in the future
+
       let temp = await getUser(client, { id: _ID });
       console.log(temp);
       if (temp === null) {
-
-        await createUser(client, { name: "Main User", age: -1, phoneNumber: _ID });
+        await createUser(client, { name: "Main User", age: -1, phoneNumber: _ID }); // will use authentication method in the future
       }
     })()
   }, [])

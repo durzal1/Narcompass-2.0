@@ -48,6 +48,11 @@
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "69155e04-2368-486e-9bce-c20ad432a9d7"
+      }
+    }
   }
 }

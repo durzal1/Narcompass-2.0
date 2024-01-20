@@ -6,12 +6,23 @@ import * as Location from 'expo-location';
 import MapViewDirections from 'react-native-maps-directions';
 import { Text, View } from '../components/Themed';
 import { onUpdateOverdoses } from '../src/graphql/subscriptions';
-import { createLocation, createOverdose, deleteOverdose, getLocation, getOverdose, getUser, listLocations, updateLocation } from '../screens/dbFunctions';
+import { createLocation, createOverdose, deleteOverdose, getLocation, getOverdose, getUser, listLocations, updateLocation } from '../src/dbFunctions';
 import { client, _ID } from '../App';
 import Toast, { BaseToast } from 'react-native-toast-message';
 import narcan from "../assets/images/narcan2PNG.png"
 import { MaterialIcons } from "@expo/vector-icons";
+import Geocoding from 'react-native-geocoding';
 
+Geocoding.init("AIzaSyAvZPOYG_JRxzhQC-TP_KE884wXOFEjpsY"); // api key public for testing purposes and to share functionality with scholarship
+const reverseGeocode = async (latitude, longitude) => {
+  try {
+    const response = await Geocoding.from(latitude, longitude);
+    const address = response.results[0].formatted_address;
+    return address;
+  } catch (error) {
+    console.error("Error in reverse geocoding:", error);
+  }
+};
 // Sample JSON data
 export const locationData = [
   { id: _ID, title: 'Current Location', coordinate: { latitude: 40.146600, longitude: -75.271310 }, url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" },
@@ -29,13 +40,13 @@ export function getDistance(longitude, latitude) {
 
 export default function Map() {
 
-  const showToast = (t1, t2, add) => {
+  const showToast = (msg) => {
     Toast.show({
       type: 'customToast',
       position: 'top',
       topOffset: 35,
       visibilityTime: 20000, // notification visibility time is 20 seconds
-      props: { address: t1 }
+      props: { message: msg }
     });
   }
 
@@ -84,8 +95,8 @@ export default function Map() {
           if (last_num == helper_ids.length) return;
           last_num = helper_ids.length;
           console.log("LENGTH OF HELPERS: " + helper_ids.length);
-          let text1 = "" + helper_ids.length + " helping!", text2 = "idk", address = "n/a";
-          showToast(text1, text2, address);
+          let text1 = "" + helper_ids.length + " helping!";
+          showToast(text1);
           return;
         }
         if (getDistance(longitude, latitude) > _RADIUS) return;
@@ -96,19 +107,20 @@ export default function Map() {
         if (active) {
           console.log('herre!')
           locationData.push({ id, title: name, coordinate: { latitude, longitude } });
-          showToast(name + " needs help!", "", "" + latitude + ", " + longitude);
+          let address = await reverseGeocode(latitude, longitude);
+          console.error(address)
+          showToast(address);
         }
 
         if (helper_ids.includes(_ID)) {
           setOrigin(locationData[0].coordinate);
           setDestination({ latitude, longitude });
         }
-
+ 
         console.log(locationData)
 
       });
 
-      // setMarkers(sampleData);
 
 
     } catch (err) {
@@ -142,22 +154,7 @@ export default function Map() {
       });
 
     (async () => {
-      try {
-        const inputData = [98, 80, 15, 66, 1, 171, 59.7, 20.4];
-        await fetch('https://5h4fv0ryd5.execute-api.us-east-1.amazonaws.com/default/getHealthStatus?inputData=98,80,15,66,1,171,59.7,20.4')
-          .then(response => response.json())
-          .then(data => console.log(data))
-          .catch(error => console.error('Error calling API:', error));
-        // Make the API call
-
-        // Parse the JSON response
-        // const responseData = await response.body;
-
-        // Set the result in the state
-        // setResult(responseData);
-      } catch (error) {
-        console.error('Error calling API:', error);
-      }
+      
 
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -347,7 +344,7 @@ const toastConfig = {
           textAlign: 'center', // Center the text horizontally
         }}
       >
-        {props.address}
+        {props.message}
       </Text>
 
       <TouchableOpacity style={styles.infoCircle} onPress={() => handleInfoClick(item)}>

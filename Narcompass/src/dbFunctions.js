@@ -1,5 +1,5 @@
-import * as queries from '../../Narcompass/src/graphql/queries'
-import * as mutations from '../../Narcompass/src/graphql/mutations'
+import * as queries from './graphql/queries'
+import * as mutations from './graphql/mutations'
 
 
 /**
