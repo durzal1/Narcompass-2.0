@@ -26,7 +26,7 @@ export default function App() {
       let temp = await getUser(client, { id: _ID });
       console.log(temp);
       if (temp === null) {
-        await createUser(client, { name: "Main User", age: 22, phoneNumber: _ID }); // will use authentication method in the future for login
+        await createUser(client, { name: "User 2", age: 25, phoneNumber: _ID }); // will use authentication method in the future for login
       }
     })()
   }, [])
