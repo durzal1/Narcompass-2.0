@@ -13,7 +13,7 @@ import DeviceInfo from "react-native-device-info";
 import { generateClient } from "@aws-amplify/api";
 
 export const client = generateClient();
-export let _ID = "8042221112" // test sample phone number
+export let _ID = "5134303490" // test sample phone number
 
 export default function App() {
   const isLoadingComplete = useLoadedAssets();
@@ -21,11 +21,12 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
-      await requestPhoneNumberPermission(); // will use authentication method in the future
+      await requestPhoneNumberPermission(); // works with real phone, not on emulator - will replace _ID
 
       let temp = await getUser(client, { id: _ID });
-      if (temp === null) { // checks if user exists
-        await createUser(client, { name: "User", age: 20, phoneNumber: _ID }); // creates user if does not exist. will use authentication method in the future
+      console.log(temp);
+      if (temp === null) {
+        await createUser(client, { name: "Main User", age: 22, phoneNumber: _ID }); // will use authentication method in the future for login
       }
     })()
   }, [])
@@ -46,7 +47,7 @@ export default function App() {
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
           _ID = await DeviceInfo.getPhoneNumber()
         } else {
-          console.error('Phone number permission denied');
+          console.log('Phone number permission denied');
         }
       }
     } catch (error) {
@@ -67,4 +68,3 @@ export default function App() {
 }
 
 AppRegistry.registerComponent("narcompass", () => App);
-

@@ -7,7 +7,7 @@ import { useColorScheme, Image, StyleSheet, TouchableOpacity } from "react-nativ
 
 import Colors from "../constants/Colors";
 import Map from "../screens/map";
-import TabTwoScreen from "../screens/history";
+import TabTwoScreen from "../screens/overdose";
 import map from "../assets/images/map.png"
 import history from "../assets/images/activeOD.png"
 import health from "../assets/images/health.png"

@@ -1,5 +1,5 @@
-import React, { useState, useLayoutEffect } from 'react';
-import { FlatList, StyleSheet, View, Image, TouchableOpacity } from 'react-native';
+import React, {useState} from 'react';
+import {FlatList, StyleSheet, View, Image, TouchableOpacity} from 'react-native';
 import { Text } from '../components/Themed';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -9,127 +9,140 @@ import { _ID, client } from '../App';
 export let isNarcanCarrier = false;
 
 export function setNarcanCarrierState(state) {
-  isNarcanCarrier = state;
+    isNarcanCarrier = state;
 }
-
 const keyImageMapping = {
-  time: require('../assets/images/time5.png'),
-  location: require('../assets/images/location2.png'),
-  assigned_unit: require('../assets/images/unit1.png'),
-  distance: require('../assets/images/distance1.png'),
-  emergency_contact_info: require('../assets/images/phone.png'),
-  current_status: require('../assets/images/status.png'),
+    time: require('../assets/images/time5.png'),
+    location: require('../assets/images/location2.png'),
+    assigned_unit: require('../assets/images/unit1.png'),
+    distance: require('../assets/images/distance1.png'),
+    emergency_contact_info: require('../assets/images/phone.png'),
+    current_status: require('../assets/images/status.png'),
 };
 
 // Custom labels for each key
 const keyTextLabelMapping = {
-  ID: 'Emergency ID',
-  time: 'Time Emergency Received',
-  location: 'Location Of Emergency',
-  assigned_unit: 'Assigned Unit',
-  distance: 'Distance to Victim',
-  emergency_contact_info: 'Victim Phone Number',
-  current_status: 'Current Status Of Emergency',
+    ID: 'Emergency ID',
+    time: 'Time Emergency Received',
+    location: 'Location Of Emergency',
+    assigned_unit: 'Assigned Unit',
+    distance: 'Distance to Victim (mi)',
+    emergency_contact_info: 'Victim Phone Number',
+    current_status: 'Current Status Of Emergency',
 };
+export default function Active({ route }) {
+    const navigation = useNavigation();
+    const [isAccepted, setIsAccepted] = useState(false);
 
-const ActiveScreen = ({ route }) => {
-  const navigation = useNavigation();
-  const [isAccepted, setIsAccepted] = useState(false);
-
-  const data = [route.params.itemData]; // Assuming you pass the data as 'items' through navigation
-
-  const acceptCancelEmergency = () => {
-    const emergencyId = data[0].ID;
-    if (isAccepted) {
-      removeHelper(emergencyId);
-    } else {
-      acceptHelper(emergencyId);
-    }
-    // Logic for accepting the emergency
-    // You can implement the functionality you need here
-    setIsAccepted(!isAccepted);
-  };
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <MaterialIcons name="arrow-back" size={104} color="#FFFFFF" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
-
-  const acceptHelper = async (id) => {
-    await appendOrRemoveHelpers(client, { id, helper_id: _ID });
-  };
-
-  const removeHelper = async (id) => {
-    let temp = await getOverdose(client, { id });
-    if (temp === null) return;
-
-    let { helper_ids } = temp;
-    let idx = helper_ids.indexOf(_ID);
-
-    if (idx !== -1) {
-      await appendOrRemoveHelpers(client, { id, remove_index: idx });
-    }
-  };
-
-  const renderItem = ({ item }) => (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Information</Text>
-      </View>
-
-      <View style={styles.separator} />
-
-      {Object.entries(item).map(([key, value]) => {
-        if (key === 'ID') {
-          return null; // Skip rendering for 'ID' key
+    const data  = [route.params.itemData]; // Assuming you pass the data as 'items' through navigation
+    const acceptCancelEmergency = () => {
+        if (isAccepted) {
+            removeHelp(data[0].ID);
         }
-        let renderedValue = value;
-        if (key === 'time') {
-          // Format 'time' if the key matches
-          renderedValue = new Date(value).toLocaleTimeString();
+        else {
+            acceptHelp(data[0].ID);
         }
-        return (
-          <View key={key} style={styles.historyBox}>
-            <View style={styles.innerBox}>
-              <View style={styles.imageContainer}>
-                <Image source={keyImageMapping[key]} style={styles.defaultImage} />
-              </View>
-              <View style={styles.verticalLine}></View>
+        // Logic for accepting the emergency
+        // You can implement the functionality you need here
+        setIsAccepted(!isAccepted);
+    };
+    React.useLayoutEffect(() => {
+        navigation.setOptions({
+            headerLeft: () => (
+                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                    <MaterialIcons name="arrow-back" size={104} color="#FFFFFF" />
+                </TouchableOpacity>
+            ),
+        });
+    }, [navigation]);
 
-              <View style={styles.textContainer}>
-                <Text style={[styles.text, styles.titleText]}>{keyTextLabelMapping[key]}</Text>
-                <Text style={[styles.text, styles.contentText]}>
-                  {typeof renderedValue === 'number' ? value : `${renderedValue}`}
-                </Text>
-              </View>
+    async function acceptHelp(id) {
+        console.log(await appendOrRemoveHelpers(client, {id, helper_id: _ID}));
+        console.log("ACCEPTED!")
+
+    }
+
+    async function removeHelp(id) {
+        let temp = await getOverdose(client, { id });
+        if (temp === null) return;
+        let { helper_ids } = temp;
+        let idx = -1;
+        for (let i = 0; i < helper_ids.length; i++) {
+            if (helper_ids[i] == _ID) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx == -1) return;
+        console.log(await appendOrRemoveHelpers(client, {id, remove_index: idx}));
+        console.log("REMOVED!")
+    }
+
+    const renderItem = ({ item }) => (
+
+        <View style={styles.container}>
+
+            <View style={styles.header}>
+                <Text style={styles.headerText}>Information</Text>
             </View>
-          </View>
-        );
-      })}
-      {isNarcanCarrier ? (
-        <TouchableOpacity
-          style={[styles.acceptButton, isAccepted ? styles.cancelButton : null]}
-          onPress={acceptCancelEmergency}>
-          <Text style={styles.acceptButtonText}>{isAccepted ? 'Cancel' : 'Accept'}</Text>
-        </TouchableOpacity>
-      ) : null}
-    </View>
-  );
 
-  return (
-    <FlatList
-      data={data}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.ID.toString()}
-      style={styles.container2}
-    />
-  );
-};
+            <View style={styles.separator} />
+
+            {Object.entries(item).map(([key, value]) => {
+                if (key === 'ID') {
+                    return null; // Skip rendering for 'ID' key
+                }
+                let renderedValue = value;
+                if (key === 'time') {
+                    // Format 'time' if the key matches
+                    renderedValue = new Date(value).toLocaleTimeString();
+                    console.log(renderedValue)
+                }
+                return (
+                    <View key={key} style={styles.historyBox}>
+                        <View style={styles.innerBox}>
+                            <View style={styles.imageContainer}>
+                                <Image
+                                    source={keyImageMapping[key]}
+                                    style={styles.defaultImage}
+                                />
+                            </View>
+                            <View style={styles.verticalLine}></View>
+
+                            <View style={styles.textContainer}>
+                                <Text style={[styles.text, styles.titleText]}>{keyTextLabelMapping[key]}</Text>
+                                <Text style={[styles.text, styles.contentText]}>
+                                    {typeof renderedValue === 'number' ? value : `${renderedValue}`}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                );
+            })}
+            {
+                isNarcanCarrier ? <TouchableOpacity
+                style={[styles.acceptButton, isAccepted ? styles.cancelButton : null]}
+                onPress={acceptCancelEmergency}
+            >
+                <Text style={styles.acceptButtonText}>
+                    {isAccepted ? 'Cancel' : 'Accept'}
+                </Text>
+            </TouchableOpacity>
+            : null
+            }
+        
+            
+        </View>
+    );
+    return (
+        <FlatList
+            data={data}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.ID.toString()}
+            style={styles.container2}
+        />
+    );
+}
 
 const styles = StyleSheet.create({
     backButton: {

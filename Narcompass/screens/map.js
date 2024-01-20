@@ -12,6 +12,7 @@ import Toast from 'react-native-toast-message';
 import narcanImage from "../assets/images/narcan2PNG.png";
 import { MaterialIcons } from "@expo/vector-icons";
 import Geocoding from 'react-native-geocoding';
+import { isNarcanCarrier } from './Active';
 
 // Initialize Geocoding with API key (public for testing purposes and scholarship)
 Geocoding.init("AIzaSyAvZPOYG_JRxzhQC-TP_KE884wXOFEjpsY");
@@ -29,10 +30,10 @@ export const reverseGeocode = async (latitude, longitude) => {
 
 // Sample JSON data for location
 export const locationData = [
-  { id: _ID, title: 'Current Location', coordinate: { latitude: 40.146600, longitude: -75.271310 }, image: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" },
+  { id: _ID, title: 'Current Location', coordinate: { latitude: 40.146600, longitude: -75.271310 }, image: "" },
 ];
 
-export let _RADIUS = 2;
+export let _RADIUS = 2.0; // 2 miles
 
 // Set the radius for location filtering
 export function setRadius(radius) {
@@ -91,47 +92,46 @@ export default function Map() {
       locations.forEach(async item => {
         const { id, latitude, longitude } = item;
         if (id === _ID) {
-          let overdoseData = await getOverdose(client, { id });
+          let overdoseData = await getOverdose(client, { id }); // if current user reported overdose
           if (overdoseData === null) return;
           const { active, helper_ids } = overdoseData;
           if (!active) return;
           if (lastNumHelpers == helper_ids.length) return;
-          lastNumHelpers = helper_ids.length;
+          lastNumHelpers = helper_ids.length; // gets number of helpers on the way
           let message = `${helper_ids.length} helping!`;
           showToast(message);
           return;
         }
-        if (getDistance(longitude, latitude) > _RADIUS) return;
+        if (getDistance(longitude, latitude) > _RADIUS) return; // if distance outside set radius, ignore
 
         let overdoseData = await getOverdose(client, { id });
-        if (overdoseData === null) return;
+        if (overdoseData === null) return; 
         const { active, helper_ids } = overdoseData;
-        const { name } = await getUser(client, { id });
-
-        if (active) {
-          locationData.push({ id, title: name, coordinate: { latitude, longitude }, image: narcanImage });
-          let address = await reverseGeocode(latitude, longitude);
-          showToast(address);
+        const { name } = await getUser(client, { id }); 
+ 
+        if (active) { // if an overdose is active
+          locationData.push({ id, title: name, coordinate: { latitude, longitude }, image: "" }); 
+          let address = await reverseGeocode(latitude, longitude); 
+          if (isNarcanCarrier) showToast(address); // alerts user with overdose registered as carrier
         }
 
-        if (helper_ids.includes(_ID)) {
-          setOrigin(locationData[0].coordinate);
-          setDestination({ latitude, longitude });
+        if (helper_ids.includes(_ID)) { // if set as helping user, create route
+          setOrigin(locationData[0].coordinate); 
+          setDestination({ latitude, longitude }); 
         }
-      });
+      }); 
 
     } catch (error) {
       console.error(error);
     }
-  }
+  }  
 
   useEffect(() => {
-    refreshLocations();
 
     // Subscribe to updates on overdoses
     const subscription = client
       .graphql({ query: onUpdateOverdoses })
-      .subscribe({
+      .subscribe({ 
         next: async ({ _data }) => {
           await refreshLocations();
           setMarkers(locationData);
@@ -141,15 +141,16 @@ export default function Map() {
         error: (error) => console.error(error),
       });
 
-    // Request location permission and watch user's location
+    // Request location permission and watch user's location 
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
+      let { status } = await Location.requestForegroundPermissionsAsync(); 
       if (status !== 'granted') {
         setErrorMsg('Permission to access location was denied');
         return;
-      }
-
-      let locationSubscription = await Location.watchPositionAsync({ accuracy: Location.Accuracy.Highest }, async (location) => {
+      } 
+     
+    await refreshLocations();
+      let locationSubscription = await Location.watchPositionAsync({ accuracy: Location.Accuracy.Highest }, async (location) => { // continously update own posiiton to DB
         let latitude = location.coords.latitude;
         let longitude = location.coords.longitude;
 
@@ -166,8 +167,8 @@ export default function Map() {
         locationData[0].coordinate = { latitude, longitude };
         let existingLocation = await getLocation(client, { id: _ID });
         let timestamp = new Date().getMilliseconds();
-
-        if (existingLocation === null) {
+        // create location if does not exist, else update it
+        if (existingLocation === null) { 
           await createLocation(client, { id: _ID, longitude, latitude, timestamp });
         } else {
           await updateLocation(client, { id: _ID, longitude, latitude, timestamp });
@@ -176,11 +177,7 @@ export default function Map() {
       });
     })();
 
-    // Cleanup subscriptions on component unmount
-    return () => {
-      subscription.unsubscribe();
-      locationSubscription.remove();
-    };
+
 
   }, []);
 
@@ -321,7 +318,7 @@ const toastConfig = {
       }}
     >
       <View style={styles.circle}>
-        <Image source={narcan} style={styles.image} />
+        <Image source={narcanImage} style={styles.image} />
       </View>
       <Text
         style={{

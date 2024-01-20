@@ -9,7 +9,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 import NotFoundScreen from "../screens/NotFoundScreen";
 import BottomTabNavigator from "./BottomTabNavigator";
-import history from "../screens/history";
+import history from "../screens/overdose";
 import active from "../screens/Active";
 import LinkingConfiguration from "./LinkingConfiguration";
 

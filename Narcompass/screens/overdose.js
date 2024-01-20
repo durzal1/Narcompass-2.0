@@ -5,7 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { getDistance, locationData, reverseGeocode } from "./map";
 import { getLocation, getOverdose } from "../src/dbFunctions";
-import { client } from "../App";
+import { _ID, client } from "../App";
 
 // Function to format phone numbers in a readable format
 const formatPhoneNumber = (phoneNumber) => {
@@ -16,10 +16,10 @@ const formatPhoneNumber = (phoneNumber) => {
     }
     return phoneNumber;
 };
-
-export default function History() {
+ 
+export default function Overdose() {
     const navigation = useNavigation();
-    const [historyBoxes, setHistoryBoxes] = useState([]);
+    const [overdoseBoxes, setOverdoseBoxes] = useState([]);
 
     const handleInfoClick = (itemData) => {
         navigation.navigate('ActiveDetails', { itemData });
@@ -27,25 +27,25 @@ export default function History() {
 
     useEffect(() => {
         (async () => {
-            const historyData = [];
+            const overdoseData = [];
 
             for (const location of locationData) {
-                if (location.id === undefined) continue;
+                if (location.id === undefined || location.id === _ID) continue; // if an overdose does not exist or if it is your own reporting, ignore
+                console.error(locationData)
+                // Fetch overdose information for given user
+                let cur = await getOverdose(client, { id: location.id });
 
-                // Fetch overdose information
-                let overdoseData = await getOverdose(client, { id: location.id });
+                if (cur === null) continue;
 
-                if (overdoseData === null) continue;
-
-                let { id, helper_ids, timestamp, active } = overdoseData;
+                let { id, helper_ids, timestamp, active } = cur;
 
                 // Get latitude and longitude
-                let { longitude, latitude } = await getLocation(client, { id: id });
-
-                // Format data for rendering
-                historyData.push({
+                let { longitude, latitude } = await getLocation(client,  { id: id });
+ 
+                // Add data to list to display
+                overdoseData.push({
                     ID: id,
-                    time: timestamp,
+                    time: timestamp,  
                     location: await reverseGeocode(latitude, longitude),
                     distance: getDistance(longitude, latitude),
                     emergency_contact_info: formatPhoneNumber(id),
@@ -55,14 +55,14 @@ export default function History() {
             }
 
             // Set the formatted data in the state
-            setHistoryBoxes(mapHistoryData(historyData));
+            setOverdoseBoxes(mapOverdoseData(overdoseData));
         })();
     }, []);
 
-    // Map overdose history data to JSX elements
-    function mapHistoryData(data) {
+    // Map overdose overdose data to JSX elements
+    function mapOverdoseData(data) {
         return data.map((item, index) => (
-            <View key={index} style={styles.historyBox}>
+            <View key={index} style={styles.overdoseBox}>
                 <View style={styles.innerBox}>
                     <View style={styles.circle}>
                         <Image source={narcanImage} style={styles.image} />
@@ -86,13 +86,13 @@ export default function History() {
         ));
     }
 
-    return (
+    return ( 
         <View style={styles.container}>
             <View style={styles.titleContainer}>
                 <Text style={styles.title}>Recent Overdoses</Text>
             </View>
-            <View style={styles.separator} />
-            <FlatList data={historyBoxes} renderItem={({ item }) => item} />
+            <View style={styles.separator} /> 
+            <FlatList data={overdoseBoxes} renderItem={({ item }) => item} />
         </View>
     );
 }
@@ -149,8 +149,8 @@ const styles = StyleSheet.create({
         height: 1, // Make the line thinner
         backgroundColor: '#8491a1', // Adjust color for subtle contrast
     },
-    historyBox: {
-        marginBottom: 2, // Increase space between history boxes
+    overdoseBox: {
+        marginBottom: 2, // Increase space between overdose boxes
         width: "100%",
         backgroundColor: '#131c25',
         paddingHorizontal: 15, // Add padding for better alignment
