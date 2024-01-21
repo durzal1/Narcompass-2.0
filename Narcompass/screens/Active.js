@@ -27,7 +27,7 @@ const keyTextLabelMapping = {
     location: 'Location Of Emergency',
     assigned_carriers: 'Assigned Carriers',
     distance: 'Distance to Victim (mi)',
-    emergency_contact_info: 'Victim Phone Number',
+    emergency_contact_info: 'Reporter Phone Number',
     current_status: 'Current Status Of Emergency',
 };
 export default function Active({ route }) {
