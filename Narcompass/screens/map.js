@@ -28,9 +28,11 @@ export const reverseGeocode = async (latitude, longitude) => {
   }
 };
 
-// Sample JSON data for location
+const TEST_LAT = 40.1466;
+const TEST_LONG = -75.27131;
+// location data of  current user and nearby users experiencing overdose
 export let locationData = [
-  { id: _ID, title: 'Current Location', coordinate: { latitude: 40.1466, longitude: -75.27131 } }, // updates this default pose to match current location
+  { id: _ID, title: 'Current Location', coordinate: { latitude: TEST_LAT, longitude: TEST_LONG } }, // updates this default pose to match current location
 ];
 
 export let _RADIUS = 2.0; // 2 miles
@@ -67,12 +69,12 @@ export default function Map() {
   // Handle button press for reporting overdose or canceling help
   async function handleReportButtonPress() {
     if (reportButtonText === 'Report') {
-      await createOverdose(client, { id: _ID, timestamp: new Date().getMilliseconds(), active: true });
+      await createOverdose(client, { id: _ID, timestamp: new Date().getMilliseconds(), active: true }); // creates overdose in database
       showToast("Overdose help requested!");
       setReportButtonColor('red');
       setReportButtonText('Cancel');
     } else {
-      await deleteOverdose(client, { id: _ID });
+      await deleteOverdose(client, { id: _ID }); // removes overdose is database
       showToast("Help cancelled!");
       setReportButtonColor('green');
       setReportButtonText('Report');
@@ -93,29 +95,29 @@ export default function Map() {
 
       for (item of locations) {
         const { id, latitude, longitude } = item;
-        if (id === _ID) {
-          let overdoseData = await getOverdose(client, { id }); // if current user reported overdose
-          if (overdoseData === null) continue;
-          const { active, helper_ids } = overdoseData;
+        let overdoseData = await getOverdose(client, { id }); // if current user reported overdose
+        const { active, helper_ids } = overdoseData;
+
+        if (overdoseData === null) continue;
+        if (id === _ID) { // if on current user in database
+
           if (!active) continue;
-          if (lastNumHelpers == helper_ids.length) continue;
+          if (lastNumHelpers === helper_ids.length) continue;
+
           lastNumHelpers = helper_ids.length; // gets number of helpers on the way
+
           let message = `${helper_ids.length} helping!`;
           showToast(message);
           continue;
         }
-        if (getDistance(longitude, latitude) > _RADIUS) continue; // if distance outside set radius, ignore
 
-        let overdoseData = await getOverdose(client, { id });
-        if (overdoseData === null) continue;
-        const { active, helper_ids } = overdoseData;
+        if (getDistance(longitude, latitude) > _RADIUS) continue; // if distance of other user outside set radius, ignore
+
         const { name } = await getUser(client, { id });
 
         if (active) { // if an overdose is active
 
           newMarkers.push({ id, title: name, coordinate: { latitude, longitude } });
-          console.error(newMarkers);
-
 
           let address = await reverseGeocode(latitude, longitude);
           if (isNarcanCarrier) showToast(address); // alerts user with overdose registered as carrier
@@ -130,11 +132,9 @@ export default function Map() {
     } catch (error) {
       console.error(error);
     }
+    // update locationData with new overdose data
     locationData.splice(0, locationData.length);
-
     locationData = [...newMarkers]
-
-    console.error(locationData);
 
     setMarkers(newMarkers);
 
@@ -173,7 +173,7 @@ export default function Map() {
         return;
       }
 
-      await refreshLocations();
+      await refreshLocations(); // refresh locations on ititialize
 
       // continously update own posiiton to DB. For demo purposes, this is hardcoded so you can see the sample data
       let locationSubscription = await Location.watchPositionAsync({ accuracy: Location.Accuracy.Highest }, async (location) => {
@@ -185,9 +185,9 @@ export default function Map() {
           setRegion({
             // latitude,
             // longitude,
-            // hardcoded data
-            latitude: 40.1466,
-            longitude: -75.27131,
+            // using hardcoded data
+            latitude: TEST_LAT,
+            longitude: TEST_LONG,
             latitudeDelta: 0.03,
             longitudeDelta: 0.03,
           });
