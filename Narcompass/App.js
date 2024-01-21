@@ -13,7 +13,7 @@ import DeviceInfo from "react-native-device-info";
 import { generateClient } from "@aws-amplify/api";
 
 export const client = generateClient();
-export let _ID = "5134303490" // test sample phone number
+export let _ID = "5134303491" // test sample phone number
 
 export default function App() {
   const isLoadingComplete = useLoadedAssets();
