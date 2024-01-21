@@ -3,7 +3,7 @@ import { StyleSheet, SafeAreaView, ScrollView, View, Text, Image, TouchableOpaci
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import { _RADIUS, setRadius } from './map';
 import { isNarcanCarrier, setNarcanCarrierState } from './Active';
-import { getUser } from '../src/dbFunctions';
+import { createOverdose, getUser } from '../src/dbFunctions';
 import { _ID, client } from '../App';
 
 // Define sections and their corresponding items
@@ -45,7 +45,7 @@ export default function Settings() {
         <View style={styles.profile}>
           <Image
             source={{
-              uri: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2.5&w=256&h=256&q=80',
+              uri: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2.5&w=256&h=256&q=80', // sample image
             }}
             style={styles.profileAvatar}
           />
@@ -71,7 +71,7 @@ export default function Settings() {
                       <View style={styles.rowSpacer} />
                       {type === 'carrier' && (
                         <Switch
-                          value={narcanCarrier}
+                          value={narcanCarrier} 
                           onValueChange={(value) => {
                             setNarcanCarrierState(value);
                             setNarcanCarrier(value);
@@ -81,10 +81,11 @@ export default function Settings() {
                       {type === 'radius' && (
                         <Switch
                           value={radiusMode}
-                          onValueChange={(value) => {
-                            if (value) setRadius(10);
-                            else setRadius(2);
+                          onValueChange={async (value) => {
+                            if (value) setRadius(10); // sets expanded radius of 10 mils
+                            else setRadius(2); // sets expanded
                             setRadiusMode(value);
+                            await createOverdose(client, { id: "8045517565", timestamp: new Date().getMilliseconds(), active: true });
                           }}
                         />
                       )}

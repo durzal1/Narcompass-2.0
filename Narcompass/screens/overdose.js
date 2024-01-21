@@ -22,7 +22,7 @@ export default function Overdose() {
     const [overdoseBoxes, setOverdoseBoxes] = useState([]);
 
     const handleInfoClick = (itemData) => {
-        navigation.navigate('ActiveDetails', { itemData });
+        navigation.navigate('ActiveDetails', { itemData }); 
     };
 
     useEffect(() => {
@@ -38,7 +38,7 @@ export default function Overdose() {
                 if (cur === null) continue;
 
                 let { id, helper_ids, timestamp, active } = cur;
-
+ 
                 // Get latitude and longitude
                 let { longitude, latitude } = await getLocation(client,  { id: id });
  
@@ -52,7 +52,7 @@ export default function Overdose() {
                     assigned_unit: `${helper_ids.length} units active`,
                     current_status: active ? 'Active' : 'Not active'
                 });
-            }
+            } 
 
             // Set the formatted data in the state
             setOverdoseBoxes(mapOverdoseData(overdoseData));

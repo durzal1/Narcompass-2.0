@@ -13,7 +13,7 @@ import DeviceInfo from "react-native-device-info";
 import { generateClient } from "@aws-amplify/api";
 
 export const client = generateClient();
-export let _ID = "5134303491" // test sample phone number
+export let _ID = "5134303490" // test sample phone number
 
 export default function App() {
   const isLoadingComplete = useLoadedAssets();
@@ -26,7 +26,7 @@ export default function App() {
       let temp = await getUser(client, { id: _ID });
       console.log(temp);
       if (temp === null) {
-        await createUser(client, { name: "User 2", age: 25, phoneNumber: _ID }); // will use authentication method in the future for login
+        await createUser(client, { name: "John Doe", age: 25, phoneNumber: _ID }); // will use authentication method in the future for login
       }
     })()
   }, [])

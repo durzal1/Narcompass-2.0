@@ -32,14 +32,13 @@ export default function HealthIndicators() {
 
     // Update health information based on user input
     const updateHealthInfo = async (id, newValue) => {
-        console.error(id + " " + newValue);
 
         // Clone healthInfo to avoid mutating the state directly
         let tempInfo = { ...healthInfo };
         tempInfo[id] = id === "sex" ? newValue : parseInt(newValue, 10);
 
         // Check if the value is NaN and set it to an empty string
-        if (isNaN(tempInfo[id])) {
+        if (id !== "sex" && isNaN(tempInfo[id])) {
             tempInfo[id] = '';
         }
 
@@ -49,14 +48,12 @@ export default function HealthIndicators() {
         let healthArr = Object.values(tempInfo);
         healthArr[4] = (healthArr[4] === 'Male') ? 1 : -1;
 
-        console.error(healthArr);
 
         try {
             // Call the API to get health status
             const response = await fetch(`https://5h4fv0ryd5.execute-api.us-east-1.amazonaws.com/default/getHealthStatus?inputData=${healthArr.join(',')}`);
             const data = await response.json();
 
-            console.error(data);
 
             // Update health status based on API response
             setHealthStatus(data.result === "1" ? "Healthy" : "Not Healthy");
