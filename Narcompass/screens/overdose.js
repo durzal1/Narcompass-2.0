@@ -49,7 +49,7 @@ export default function Overdose() {
                     location: await reverseGeocode(latitude, longitude),
                     distance: getDistance(longitude, latitude),
                     emergency_contact_info: formatPhoneNumber(id),
-                    assigned_unit: `${helper_ids.length} units active`,
+                    assigned_carrier: `${helper_ids.length} carriers active`,
                     current_status: active ? 'Active' : 'Not active'
                 });
             } 

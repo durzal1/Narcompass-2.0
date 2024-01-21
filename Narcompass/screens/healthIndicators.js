@@ -56,7 +56,7 @@ export default function HealthIndicators() {
 
 
             // Update health status based on API response
-            setHealthStatus(data.result === "1" ? "Healthy" : "Not Healthy");
+            setHealthStatus(data.result === "1" ? "Healthy" : "Overdosing");
         } catch (error) {
             console.error('Error calling API:', error);
         }

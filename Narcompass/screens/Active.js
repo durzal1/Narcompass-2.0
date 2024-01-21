@@ -14,7 +14,7 @@ export function setNarcanCarrierState(state) {
 const keyImageMapping = {
     time: require('../assets/images/time5.png'),
     location: require('../assets/images/location2.png'),
-    assigned_carriers: require('../assets/images/unit1.png'),
+    assigned_carrier: require('../assets/images/unit1.png'),
     distance: require('../assets/images/distance1.png'),
     emergency_contact_info: require('../assets/images/phone.png'),
     current_status: require('../assets/images/status.png'),
@@ -25,7 +25,7 @@ const keyTextLabelMapping = {
     ID: 'Emergency ID',
     time: 'Time Emergency Received',
     location: 'Location Of Emergency',
-    assigned_carriers: 'Assigned Carriers',
+    assigned_carrier: 'Assigned Carrier',
     distance: 'Distance to Victim (mi)',
     emergency_contact_info: 'Reporter Phone Number',
     current_status: 'Current Status Of Emergency',

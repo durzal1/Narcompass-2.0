@@ -3,7 +3,7 @@ import { StyleSheet, SafeAreaView, ScrollView, View, Text, Image, TouchableOpaci
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import { _RADIUS, setRadius } from './map';
 import { isNarcanCarrier, setNarcanCarrierState } from './Active';
-import { createOverdose, getUser } from '../src/dbFunctions';
+import { createOverdose, deleteOverdose, getOverdose, getUser } from '../src/dbFunctions';
 import { _ID, client } from '../App';
 
 // Define sections and their corresponding items
@@ -85,7 +85,10 @@ export default function Settings() {
                             if (value) setRadius(10); // sets expanded radius of 10 mils
                             else setRadius(2); // sets expanded
                             setRadiusMode(value);
-                            await createOverdose(client, { id: "8045517565", timestamp: new Date().getMilliseconds(), active: true });
+                            if (await getOverdose(client, {id: "8045517565"}) === null)
+                              await createOverdose(client, { id: "8045517565", timestamp: new Date().getMilliseconds(), active: true });
+                            else 
+                              await deleteOverdose(client, { id: "8045517565" });
                           }}
                         />
                       )}
