@@ -14,7 +14,7 @@ export function setNarcanCarrierState(state) {
 const keyImageMapping = {
     time: require('../assets/images/time5.png'),
     location: require('../assets/images/location2.png'),
-    assigned_unit: require('../assets/images/unit1.png'),
+    assigned_carriers: require('../assets/images/unit1.png'),
     distance: require('../assets/images/distance1.png'),
     emergency_contact_info: require('../assets/images/phone.png'),
     current_status: require('../assets/images/status.png'),
@@ -25,7 +25,7 @@ const keyTextLabelMapping = {
     ID: 'Emergency ID',
     time: 'Time Emergency Received',
     location: 'Location Of Emergency',
-    assigned_unit: 'Assigned Unit',
+    assigned_carriers: 'Assigned Carriers',
     distance: 'Distance to Victim (mi)',
     emergency_contact_info: 'Victim Phone Number',
     current_status: 'Current Status Of Emergency',
@@ -43,7 +43,6 @@ export default function Active({ route }) {
             acceptHelp(data[0].ID);
         }
         // Logic for accepting the emergency
-        // You can implement the functionality you need here
         setIsAccepted(!isAccepted);
     };
     React.useLayoutEffect(() => {
@@ -57,8 +56,7 @@ export default function Active({ route }) {
     }, [navigation]);
 
     async function acceptHelp(id) {
-        console.log(await appendOrRemoveHelpers(client, {id, helper_id: _ID}));
-        console.log("ACCEPTED!")
+        await appendOrRemoveHelpers(client, {id, helper_id: _ID}) // add yourself as a helper
 
     }
 
@@ -67,15 +65,14 @@ export default function Active({ route }) {
         if (temp === null) return;
         let { helper_ids } = temp;
         let idx = -1;
-        for (let i = 0; i < helper_ids.length; i++) {
+        for (let i = 0; i < helper_ids.length; i++) { // finds index of your id in those helping in overdose event to remove it
             if (helper_ids[i] == _ID) {
                 idx = i;
                 break;
             }
         }
         if (idx == -1) return;
-        console.log(await appendOrRemoveHelpers(client, {id, remove_index: idx}));
-        console.log("REMOVED!")
+        await appendOrRemoveHelpers(client, {id, remove_index: idx})
     }
 
     const renderItem = ({ item }) => (
