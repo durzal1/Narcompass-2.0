@@ -15,7 +15,7 @@ import Geocoding from 'react-native-geocoding';
 import { isNarcanCarrier } from './Active';
 
 // Initialize Geocoding with API key (public for testing purposes and demo)
-Geocoding.init("AIzaSyAvZPOYG_JRxzhQC-TP_KE884wXOFEjpsY");
+Geocoding.init(process.env.GOOGLE_MAPS_API_KEY);
 
 // Reverse geocode function to get address from latitude and longitude
 export const reverseGeocode = async (latitude, longitude) => {
@@ -241,7 +241,7 @@ export default function Map() {
           <MapViewDirections
             origin={origin}
             destination={destination}
-            apikey="AIzaSyAvZPOYG_JRxzhQC-TP_KE884wXOFEjpsY"
+            apikey="API_KEY"
             strokeWidth={3}
             strokeColor="red"
           />

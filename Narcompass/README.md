@@ -39,13 +39,13 @@ If you do not have an Android device, you have a few options:
 1. **Online Emulator:**
    - An easier alternative is to use [this link](https://appetize.io/app/an43t7zeehs2cytt2jkrgftkxm?device=pixel7&osVersion=13.0) to run our app online in an emulator.
    - Note: It may time out, but you can run it multiple times on the provided link.
-   
+
 2. **Using Android Studio:**
    - Download Android Studio and set up an emulator through the virtual device manager (e.g., Pixel).
-   - Drag our `NarCompass.apk` onto the emulator to install it.
+   - Build our React Native App and drag our `NarCompass.apk` onto the emulator to install it.
 
 3. **Using Any Android Emulator:**
    - Download any Android emulator of your choice.
    - Set the emulator to be in portrait mode.
-   - Install our `NarCompass.apk` on the emulator.
+   - Build our React Native App and drag our `NarCompass.apk` on the emulator.
 
