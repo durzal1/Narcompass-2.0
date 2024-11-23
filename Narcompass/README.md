@@ -1,37 +1,51 @@
-# Navigation Example
+# NarCompass: Life-Saving Connections
 
-<p>
-  <!-- iOS -->
-  <a href="https://itunes.apple.com/app/apple-store/id982107779">
-    <img alt="Supports Expo iOS" longdesc="Supports Expo iOS" src="https://img.shields.io/badge/iOS-4630EB.svg?style=flat-square&logo=APPLE&labelColor=999999&logoColor=fff" />
-  </a>
-  <!-- Android -->
-  <a href="https://play.google.com/store/apps/details?id=host.exp.exponent&referrer=blankexample">
-    <img alt="Supports Expo Android" longdesc="Supports Expo Android" src="https://img.shields.io/badge/Android-4630EB.svg?style=flat-square&logo=ANDROID&labelColor=A4C639&logoColor=fff" />
-  </a>
-  <!-- Web -->
-  <a href="https://docs.expo.dev/workflow/web/">
-    <img alt="Supports Expo Web" longdesc="Supports Expo Web" src="https://img.shields.io/badge/web-4630EB.svg?style=flat-square&logo=GOOGLE-CHROME&labelColor=4285F4&logoColor=fff" />
-  </a>
-</p>
+Connecting Narcan carriers with overdose victims instantly to save lives.
 
-## 🚀 How to use
+Try it out without an andoroid device with [this link](https://appetize.io/app/an43t7zeehs2cytt2jkrgftkxm?device=pixel7&osVersion=13.0)
+More information on [How to Run](#how-to-run) is below.
 
-- Install packages with `yarn` or `npm install`.
-- Run `yarn start` or `npm run start` to start the bundler.
-- Open the project in a React runtime to try it:
-  - iOS: [Client iOS](https://itunes.apple.com/app/apple-store/id982107779)
-  - Android: [Client Android](https://play.google.com/store/apps/details?id=host.exp.exponent&referrer=blankexample)
-  - Web: Any web browser
-- When it's time to customize your runtime, refer to the ["Adding custom native code"](https://docs.expo.dev/workflow/customizing/) guide!
+## 🛠 Tech Stack
 
-## Publishing
+- **React Native**: For building the mobile application.
+- **AWS Amplify**: For backend services and cloud integration.
+- **GraphQL**: For API queries and mutations.
+- **Expo**: For development and deployment.
+- **Tensorflow**: Train ML custom ML model to determine overdose status based on smartwatch readings.
+- **Express**: Creat a RESTful API to query ML model from our app.
 
-- Deploy the native app to the App store and Play store using this guide: [Deployment](https://docs.expo.dev/distribution/app-stores/).
-- Deploy the website using this guide: [Web deployment](https://docs.expo.dev/distribution/publishing-websites/).
+## 🌟 Inspiration
 
-## 📝 Notes
+Philadelphia's overdose crisis has overwhelmed emergency services. Narcan, now available over-the-counter, can save lives, but civilians often don't know where overdoses are happening. Our app provides this crucial information, enabling timely civilian intervention.
 
-- Learn more about [Universal React](https://docs.expo.dev/).
-- See what API and components are [available in the React runtimes](https://docs.expo.dev/versions/latest/).
-- Find out more about developing apps and websites: [Official guides](https://docs.expo.dev/guides/).
+## 📱 What it does
+
+NarCompass lets victims call for help with one button, alerting hospitals and nearby Narcan carriers. It maps the quickest route for carriers to reach victims, supporting driving, walking, and biking. Callers are updated on help's progress.
+
+Carriers can set their response range, and callers control what information is shared, stored in a cloud database for optimal response.
+
+## How to Run
+
+### On Android Device
+
+If you have an Android device, follow these steps:
+
+1. Install our executable, `NarCompass.apk`, onto your device.
+
+### Without Android Device
+
+If you do not have an Android device, you have a few options:
+
+1. **Online Emulator:**
+   - An easier alternative is to use [this link](https://appetize.io/app/an43t7zeehs2cytt2jkrgftkxm?device=pixel7&osVersion=13.0) to run our app online in an emulator.
+   - Note: It may time out, but you can run it multiple times on the provided link.
+   
+2. **Using Android Studio:**
+   - Download Android Studio and set up an emulator through the virtual device manager (e.g., Pixel).
+   - Drag our `NarCompass.apk` onto the emulator to install it.
+
+3. **Using Any Android Emulator:**
+   - Download any Android emulator of your choice.
+   - Set the emulator to be in portrait mode.
+   - Install our `NarCompass.apk` on the emulator.
+

@@ -16,47 +16,45 @@ const formatPhoneNumber = (phoneNumber) => {
     }
     return phoneNumber;
 };
- 
+
 export default function Overdose() {
     const navigation = useNavigation();
     const [overdoseBoxes, setOverdoseBoxes] = useState([]);
+    const [d, setD] = useState(null);
+
 
     const handleInfoClick = (itemData) => {
-        navigation.navigate('ActiveDetails', { itemData }); 
+        navigation.navigate('ActiveDetails', { itemData });
     };
 
     useEffect(() => {
-        (async () => {
+        const fetchData = async () => {
             const overdoseData = [];
-
             for (const location of locationData) {
-                if (location.id === undefined || location.id === _ID) continue; // if an overdose does not exist or if it is your own reporting, ignore
-                console.error(locationData)
-                // Fetch overdose information for given user
-                let cur = await getOverdose(client, { id: location.id });
+                if (location.id === undefined || location.id === _ID) continue;
+
+                let cur = await getOverdose(client, { id: location.id }); // gets nearby overdose event
 
                 if (cur === null) continue;
 
                 let { id, helper_ids, timestamp, active } = cur;
- 
-                // Get latitude and longitude
-                let { longitude, latitude } = await getLocation(client,  { id: id });
- 
-                // Add data to list to display
+                let { longitude, latitude } = await getLocation(client, { id: id }); // gets most up to date location of overdose
+
                 overdoseData.push({
                     ID: id,
-                    time: timestamp,  
+                    time: timestamp,
                     location: await reverseGeocode(latitude, longitude),
                     distance: getDistance(longitude, latitude),
                     emergency_contact_info: formatPhoneNumber(id),
                     assigned_carrier: `${helper_ids.length} carriers active`,
                     current_status: active ? 'Active' : 'Not active'
-                });
-            } 
+                }); // pushes all the necessary data of each overdose
+            }
 
-            // Set the formatted data in the state
-            setOverdoseBoxes(mapOverdoseData(overdoseData));
-        })();
+            setOverdoseBoxes(mapOverdoseData(overdoseData)); // displays overdoses
+        };
+
+
     }, []);
 
     // Map overdose overdose data to JSX elements
@@ -86,12 +84,12 @@ export default function Overdose() {
         ));
     }
 
-    return ( 
+    return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
                 <Text style={styles.title}>Recent Overdoses</Text>
             </View>
-            <View style={styles.separator} /> 
+            <View style={styles.separator} />
             <FlatList data={overdoseBoxes} renderItem={({ item }) => item} />
         </View>
     );

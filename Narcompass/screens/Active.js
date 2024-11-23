@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {FlatList, StyleSheet, View, Image, TouchableOpacity} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { FlatList, StyleSheet, View, Image, TouchableOpacity } from 'react-native';
 import { Text } from '../components/Themed';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -33,17 +33,33 @@ const keyTextLabelMapping = {
 export default function Active({ route }) {
     const navigation = useNavigation();
     const [isAccepted, setIsAccepted] = useState(false);
+    useEffect(() => {
+        (async () => {
+            // instantiates accept/cancel button with the correct state
+            let res = await getHelperIdx(data[0].ID);
 
-    const data  = [route.params.itemData]; // Assuming you pass the data as 'items' through navigation
-    const acceptCancelEmergency = () => {
+            setIsAccepted(res !== -1);
+
+
+        })();
+
+    })
+
+
+    const data = [route.params.itemData]; // Assuming you pass the data as 'items' through navigation
+    const acceptCancelEmergency = async () => {
+        // Logic for accepting the emergency
+
         if (isAccepted) {
             removeHelp(data[0].ID);
         }
         else {
             acceptHelp(data[0].ID);
         }
-        // Logic for accepting the emergency
+
         setIsAccepted(!isAccepted);
+
+
     };
     React.useLayoutEffect(() => {
         navigation.setOptions({
@@ -55,24 +71,29 @@ export default function Active({ route }) {
         });
     }, [navigation]);
 
-    async function acceptHelp(id) {
-        await appendOrRemoveHelpers(client, {id, helper_id: _ID}) // add yourself as a helper
-
-    }
-
-    async function removeHelp(id) {
+    async function getHelperIdx(id) {
         let temp = await getOverdose(client, { id });
         if (temp === null) return;
         let { helper_ids } = temp;
         let idx = -1;
         for (let i = 0; i < helper_ids.length; i++) { // finds index of your id in those helping in overdose event to remove it
-            if (helper_ids[i] == _ID) {
+            if (helper_ids[i] === _ID) {
                 idx = i;
                 break;
             }
         }
-        if (idx == -1) return;
-        await appendOrRemoveHelpers(client, {id, remove_index: idx})
+        return idx;
+    }
+
+    async function acceptHelp(id) {
+        await appendOrRemoveHelpers(client, { id, helper_id: _ID }); // add yourself as a helper
+
+    }
+
+    async function removeHelp(id) {
+        let idx = await getHelperIdx(id);
+        if (idx === -1) return;
+        await appendOrRemoveHelpers(client, { id, remove_index: idx });
     }
 
     const renderItem = ({ item }) => (
@@ -93,7 +114,6 @@ export default function Active({ route }) {
                 if (key === 'time') {
                     // Format 'time' if the key matches
                     renderedValue = new Date(value).toLocaleTimeString();
-                    console.log(renderedValue)
                 }
                 return (
                     <View key={key} style={styles.historyBox}>
@@ -117,18 +137,19 @@ export default function Active({ route }) {
                 );
             })}
             {
+                // only show accept button if registered carrier
                 isNarcanCarrier ? <TouchableOpacity
-                style={[styles.acceptButton, isAccepted ? styles.cancelButton : null]}
-                onPress={acceptCancelEmergency}
-            >
-                <Text style={styles.acceptButtonText}>
-                    {isAccepted ? 'Cancel' : 'Accept'}
-                </Text>
-            </TouchableOpacity>
-            : null
+                    style={[styles.acceptButton, isAccepted ? styles.cancelButton : null]}
+                    onPress={acceptCancelEmergency}
+                >
+                    <Text style={styles.acceptButtonText}>
+                        {isAccepted ? 'Cancel' : 'Accept'}
+                    </Text>
+                </TouchableOpacity>
+                    : null
             }
-        
-            
+
+
         </View>
     );
     return (

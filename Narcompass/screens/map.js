@@ -14,7 +14,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Geocoding from 'react-native-geocoding';
 import { isNarcanCarrier } from './Active';
 
-// Initialize Geocoding with API key (public for testing purposes and scholarship)
+// Initialize Geocoding with API key (public for testing purposes and demo)
 Geocoding.init("AIzaSyAvZPOYG_JRxzhQC-TP_KE884wXOFEjpsY");
 
 // Reverse geocode function to get address from latitude and longitude
@@ -30,6 +30,7 @@ export const reverseGeocode = async (latitude, longitude) => {
 
 const TEST_LAT = 40.1466;
 const TEST_LONG = -75.27131;
+
 // location data of  current user and nearby users experiencing overdose
 export let locationData = [
   { id: _ID, title: 'Current Location', coordinate: { latitude: TEST_LAT, longitude: TEST_LONG } }, // updates this default pose to match current location
@@ -96,9 +97,11 @@ export default function Map() {
       for (item of locations) {
         const { id, latitude, longitude } = item;
         let overdoseData = await getOverdose(client, { id }); // if current user reported overdose
+        if (overdoseData === null) continue;
+
         const { active, helper_ids } = overdoseData;
 
-        if (overdoseData === null) continue;
+
         if (id === _ID) { // if on current user in database
 
           if (!active) continue;
@@ -120,7 +123,7 @@ export default function Map() {
           newMarkers.push({ id, title: name, coordinate: { latitude, longitude } });
 
           let address = await reverseGeocode(latitude, longitude);
-          if (isNarcanCarrier) showToast(address); // alerts user with overdose registered as carrier
+          if (isNarcanCarrier && _RADIUS === 10) showToast(address); // alerts user with overdose registered as carrier
         }
 
         if (helper_ids.includes(_ID)) { // if set as helping user, create route
@@ -143,27 +146,20 @@ export default function Map() {
   useEffect(() => {
 
 
-
-    // Subscribe to updates on overdoses
-    const subscribeCreateOverdose = client
-      .graphql({ query: onCreateOverdoses })
-      .subscribe({
+    // Subscribe to all updates on overdose events
+    const subscribeToOverdoseEvents = (query) => {
+      return client.graphql({ query }).subscribe({
         next: async ({ _data }) => {
           await refreshLocations();
-
         },
         error: (error) => console.error(error),
       });
+    };
 
-    const subscribeDeleteOverdose = client
-      .graphql({ query: onDeleteOverdoses })
-      .subscribe({
-        next: async ({ _data }) => {
-          await refreshLocations();
+    const subscribeCreateOverdose = subscribeToOverdoseEvents(onCreateOverdoses);
+    const subscribeDeleteOverdose = subscribeToOverdoseEvents(onDeleteOverdoses);
+    const subscribeUpdateOverdose = subscribeToOverdoseEvents(onUpdateOverdoses);
 
-        },
-        error: (error) => console.error(error),
-      });
 
     // Request location permission and watch user's location 
     (async () => {
@@ -178,31 +174,34 @@ export default function Map() {
       // continously update own posiiton to DB. For demo purposes, this is hardcoded so you can see the sample data
       let locationSubscription = await Location.watchPositionAsync({ accuracy: Location.Accuracy.Highest }, async (location) => {
         // real data
-        let latitude = location.coords.latitude;
-        let longitude = location.coords.longitude;
+        // let latitude = location.coords.latitude;
+        // let longitude = location.coords.longitude;
+
+        // using hardcoded data
+        let latitude = TEST_LAT;
+        let longitude = TEST_LONG;
 
         if (first) {
           setRegion({
-            // latitude,
-            // longitude,
-            // using hardcoded data
-            latitude: TEST_LAT,
-            longitude: TEST_LONG,
+            latitude,
+            longitude,
             latitudeDelta: 0.03,
             longitudeDelta: 0.03,
           });
           first = false;
         }
         // does not update for demo purposes, but uncommenting this will allow it to update based on real time locaton
-        // locationData[0].coordinate = { latitude, longitude };
+        locationData[0].coordinate = { latitude, longitude };
         let existingLocation = await getLocation(client, { id: _ID });
         let timestamp = new Date().getMilliseconds();
 
         // create location if does not exist, else update it
         if (existingLocation === null) {
           await createLocation(client, { id: _ID, longitude, latitude, timestamp });
+
         } else {
           await updateLocation(client, { id: _ID, longitude, latitude, timestamp });
+
         }
       });
     })();
@@ -235,7 +234,7 @@ export default function Map() {
             key={marker.title}
             coordinate={marker.coordinate}
             title={marker.title}
-            pinColor={marker.id == _ID ? 'blue' : 'red'}
+            pinColor={'red'}
           />
         ))}
         {origin && destination && (

@@ -3,7 +3,7 @@ import { StyleSheet, SafeAreaView, ScrollView, View, Text, Image, TouchableOpaci
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import { _RADIUS, setRadius } from './map';
 import { isNarcanCarrier, setNarcanCarrierState } from './Active';
-import { createOverdose, deleteOverdose, getOverdose, getUser } from '../src/dbFunctions';
+import { getUser } from '../src/dbFunctions';
 import { _ID, client } from '../App';
 
 // Define sections and their corresponding items
@@ -32,6 +32,7 @@ export default function Settings() {
     // Fetch user information on component mount
     (async () => {
       let { name, phoneNumber, age } = await getUser(client, { id: _ID });
+      // initalize values based on user info stored in database
       setUserName(name);
       setPhoneNum(phoneNumber);
       setAge(age);
@@ -44,8 +45,8 @@ export default function Settings() {
         {/* Profile Information */}
         <View style={styles.profile}>
           <Image
-            source={{
-              uri: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2.5&w=256&h=256&q=80', // sample image
+            source={{ // sample image
+              uri: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2.5&w=256&h=256&q=80', 
             }}
             style={styles.profileAvatar}
           />
@@ -69,7 +70,9 @@ export default function Settings() {
                       <FeatherIcon color="#616161" name={icon} style={styles.rowIcon} size={22} />
                       <Text style={styles.rowLabel}>{label}</Text>
                       <View style={styles.rowSpacer} />
+                      
                       {type === 'carrier' && (
+                        // update on carrier based on state of switch
                         <Switch
                           value={narcanCarrier} 
                           onValueChange={(value) => {
@@ -79,16 +82,13 @@ export default function Settings() {
                         />
                       )}
                       {type === 'radius' && (
+                        // update on expanded radius based on state of switch
                         <Switch
                           value={radiusMode}
                           onValueChange={async (value) => {
-                            if (value) setRadius(10); // sets expanded radius of 10 mils
-                            else setRadius(2); // sets expanded
+                            if (value) setRadius(10); // sets expanded radius of 10 miles
+                            else setRadius(2); // sets expanded radius to 2 miles
                             setRadiusMode(value);
-                            if (await getOverdose(client, {id: "8045517565"}) === null)
-                              await createOverdose(client, { id: "8045517565", timestamp: new Date().getMilliseconds(), active: true });
-                            else 
-                              await deleteOverdose(client, { id: "8045517565" });
                           }}
                         />
                       )}
